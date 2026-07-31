@@ -1,36 +1,72 @@
 import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from './Header';
 import { checkValidData } from '../Utils/Validate';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from '../Utils/Firebase';
 
 const Login = () => {
+  const navigate = useNavigate();
   const [isSignInForm, setIsSignInForm] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // guard against double clicks
 
-  // Refs for uncontrolled inputs
   const name = useRef(null);
   const email = useRef(null);
   const password = useRef(null);
 
   const toggleSignInForm = () => {
     setIsSignInForm(!isSignInForm);
-    setErrorMessage(null); // clear old errors when switching forms
+    setErrorMessage(null);
   };
 
   const handleButtonClick = () => {
-    const emailValue = email.current.value;
-    const passwordValue = password.current.value;
+    if (isSubmitting) return;
 
-    const message = checkValidData(emailValue, passwordValue);
+    const message = checkValidData(email.current.value, password.current.value);
     setErrorMessage(message);
+    if (message) return;
 
-    if (message) return; // stop here if validation failed
+    setIsSubmitting(true);
 
-    // Validation passed — this is where Firebase Sign In/Sign Up logic goes next
-    if (isSignInForm) {
-      // signInWithEmailAndPassword(...) will go here
+    if (!isSignInForm) {
+      // Sign Up
+      createUserWithEmailAndPassword(auth, email.current.value, password.current.value)
+        .then((userCredential) => {
+          console.log("User signed up:", userCredential.user);
+          navigate("/browse");
+        })
+        .catch((error) => {
+          if (error.code === "auth/email-already-in-use") {
+            setErrorMessage("This email is already registered. Please sign in instead.");
+          } else if (error.code === "auth/weak-password") {
+            setErrorMessage("Password is too weak.");
+          } else {
+            setErrorMessage(error.code + ": " + error.message);
+          }
+        })
+        .finally(() => setIsSubmitting(false));
     } else {
-      // createUserWithEmailAndPassword(...) will go here
-      // name.current.value is available here for the Sign Up flow
+      // Sign In
+      signInWithEmailAndPassword(auth, email.current.value, password.current.value)
+        .then((userCredential) => {
+          console.log("User signed in:", userCredential.user);
+          navigate("/browse");
+        })
+        .catch((error) => {
+          if (error.code === "auth/invalid-credential") {
+            setErrorMessage("Incorrect email or password.");
+          } else if (error.code === "auth/user-not-found") {
+            setErrorMessage("User Not Found.");
+          } else if (error.code === "auth/wrong-password") {
+            setErrorMessage("Incorrect Password.");
+          } else if (error.code === "auth/too-many-requests") {
+            setErrorMessage("Too many attempts. Please try again later.");
+          } else {
+            setErrorMessage(error.code + ": " + error.message);
+          }
+        })
+        .finally(() => setIsSubmitting(false));
     }
   };
 
@@ -68,7 +104,6 @@ const Login = () => {
           className="p-3 my-2 w-full bg-gray-700/60 border border-gray-500 rounded"
         />
 
-        {/* Error message shows only when there is one */}
         {errorMessage && (
           <p className="text-red-500 font-medium py-1">{errorMessage}</p>
         )}
@@ -76,9 +111,10 @@ const Login = () => {
         <button
           type="submit"
           onClick={handleButtonClick}
-          className="p-3 my-4 w-full bg-red-600 hover:bg-red-700 rounded font-semibold"
+          disabled={isSubmitting}
+          className="p-3 my-4 w-full bg-red-600 hover:bg-red-700 rounded font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSignInForm ? "Sign In" : "Sign Up"}
+          {isSubmitting ? "Please wait..." : isSignInForm ? "Sign In" : "Sign Up"}
         </button>
 
         <p className="text-gray-400 mt-6 cursor-pointer" onClick={toggleSignInForm}>
