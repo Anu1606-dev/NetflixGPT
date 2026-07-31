@@ -68,3 +68,8 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+
+The NetflixGPT project is deployed on Firebase with the following link: [https://netflixgpt-a03a2.web.app](https://netflixgpt-a03a2.web.app)
+
+Project Console link: [https://console.firebase.google.com/project/netflixgpt-a03a2/overview](https://console.firebase.google.com/project/netflixgpt-a03a2/overview)
