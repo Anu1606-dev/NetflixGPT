@@ -91,11 +91,13 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="flex items-center gap-1"
               >
-                <img
-                  className="w-8 h-8 rounded"
-                  src="https://occ-0-2232-2186.1.nflxso.net/dnm/api/v6/SO2HoVCx33X8phZh2pZZmQ4QgNY/AAAABRSzRacW3r_cmBGpsUArW055MeDHm-e-5QQ2S2dJhAKGb1wxxJzhDtHqe7WXCr-0_JqehuLMy0nphR19_S1J5AA4TQe4O3A.png?r=d8a"
-                  alt="User Avatar"
-                />
+                <div className="w-8 h-8 rounded-md overflow-hidden ring-1 ring-white/20 flex-shrink-0">
+                  <img
+                    className="w-full h-full object-cover block"
+                    src="https://i.pinimg.com/474x/5b/50/e7/5b50e75d07c726d36f397f6359098f58.jpg"
+                    alt="User Avatar"
+                  />
+                </div>
                 <span className="text-xs">▼</span>
               </button>
 
