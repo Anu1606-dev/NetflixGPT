@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { signOut } from 'firebase/auth';
 import { auth } from '../Utils/Firebase';
 import { removeUser } from '../Utils/userSlice';
@@ -8,6 +8,7 @@ import { removeUser } from '../Utils/userSlice';
 const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const user = useSelector((store) => store.user);
 
   const [showLangList, setShowLangList] = useState(false);
   const [selectedLang, setSelectedLang] = useState("English");
@@ -32,6 +33,11 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   };
 
   const navLinks = ["Home", "Shows", "Movies", "Games", "New & Popular", "My List", "Browse by Languages"];
+
+  // Fallback avatar if the user doesn't have a photoURL yet
+  const avatarUrl =
+    user?.photoURL ||
+    "https://i.pinimg.com/474x/5b/50/e7/5b50e75d07c726d36f397f6359098f58.jpg";
 
   return (
     <div className="absolute z-20 px-4 md:px-8 py-3 md:py-4 bg-gradient-to-b from-black/90 to-transparent w-full flex justify-between items-center">
@@ -112,7 +118,7 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
                 <div className="w-8 h-8 rounded-md overflow-hidden ring-1 ring-white/20 flex-shrink-0">
                   <img
                     className="w-full h-full object-cover block"
-                    src="https://i.pinimg.com/474x/5b/50/e7/5b50e75d07c726d36f397f6359098f58.jpg"
+                    src={avatarUrl}
                     alt="User Avatar"
                   />
                 </div>
@@ -120,7 +126,12 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
               </button>
 
               {showProfileMenu && (
-                <ul className="absolute right-0 mt-2 w-40 bg-black/95 border border-gray-700 rounded overflow-hidden text-sm">
+                <ul className="absolute right-0 mt-2 w-48 bg-black/95 border border-gray-700 rounded overflow-hidden text-sm">
+                  {user?.displayName && (
+                    <li className="px-3 py-2 text-gray-400 border-b border-gray-700 cursor-default">
+                      Signed in as <span className="text-white font-medium">{user.displayName}</span>
+                    </li>
+                  )}
                   <li className="px-3 py-2 hover:bg-gray-700 cursor-pointer">Manage Profiles</li>
                   <li className="px-3 py-2 hover:bg-gray-700 cursor-pointer">Account</li>
                   <li onClick={handleSignOut} className="px-3 py-2 hover:bg-gray-700 cursor-pointer">
