@@ -105,7 +105,7 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
                 <ul className="absolute right-0 mt-2 w-40 bg-black/95 border border-gray-700 rounded overflow-hidden text-sm">
                   <li className="px-3 py-2 hover:bg-gray-700 cursor-pointer">Manage Profiles</li>
                   <li className="px-3 py-2 hover:bg-gray-700 cursor-pointer">Account</li>
-                  <li className="px-3 py-2 hover:bg-gray-700 cursor-pointer">Sign out of Netflix</li>
+                  <li onClick={handleSingOut} className="px-3 py-2 hover:bg-gray-700 cursor-pointer">Sign out</li>
                 </ul>
               )}
             </div>
