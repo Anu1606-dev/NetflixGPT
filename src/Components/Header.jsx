@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { signOut } from 'firebase/auth';
+import { auth } from '../Utils/Firebase';
+import { removeUser } from '../Utils/userSlice';
 
 const Header = ({ showProfileIcon = false, showSignIn = false }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const [showLangList, setShowLangList] = useState(false);
   const [selectedLang, setSelectedLang] = useState("English");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -11,6 +18,17 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   const handleLangSelect = (lang) => {
     setSelectedLang(lang);
     setShowLangList(false);
+  };
+
+  const handleSignOut = () => {
+    signOut(auth)
+      .then(() => {
+        dispatch(removeUser());
+        navigate("/");
+      })
+      .catch((error) => {
+        console.error("Sign out error:", error.code, error.message);
+      });
   };
 
   const navLinks = ["Home", "Shows", "Movies", "Games", "New & Popular", "My List", "Browse by Languages"];
@@ -105,7 +123,9 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
                 <ul className="absolute right-0 mt-2 w-40 bg-black/95 border border-gray-700 rounded overflow-hidden text-sm">
                   <li className="px-3 py-2 hover:bg-gray-700 cursor-pointer">Manage Profiles</li>
                   <li className="px-3 py-2 hover:bg-gray-700 cursor-pointer">Account</li>
-                  <li onClick={handleSingOut} className="px-3 py-2 hover:bg-gray-700 cursor-pointer">Sign out</li>
+                  <li onClick={handleSignOut} className="px-3 py-2 hover:bg-gray-700 cursor-pointer">
+                    Sign out
+                  </li>
                 </ul>
               )}
             </div>
