@@ -1,19 +1,26 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import Header from './Header';
 import { checkValidData } from '../Utils/Validate';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from '../Utils/Firebase';
+import { addUser } from '../Utils/userSlice';
+
+const DEFAULT_PHOTO_URL = "https://github.com/Anu1606-dev/NetflixGPT/blob/main/netflix_avatar.jpg?raw=true";
 
 const Login = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const [isSignInForm, setIsSignInForm] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false); // guard against double clicks
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const name = useRef(null);
   const email = useRef(null);
   const password = useRef(null);
+  const photoURL = useRef(null);
 
   const toggleSignInForm = () => {
     setIsSignInForm(!isSignInForm);
@@ -33,8 +40,28 @@ const Login = () => {
       // Sign Up
       createUserWithEmailAndPassword(auth, email.current.value, password.current.value)
         .then((userCredential) => {
-          console.log("User signed up:", userCredential.user);
-          navigate("/browse");
+          const user = userCredential.user;
+          const finalPhotoURL = photoURL.current.value || DEFAULT_PHOTO_URL;
+
+          updateProfile(user, {
+            displayName: name.current.value,
+            photoURL: finalPhotoURL,
+          })
+            .then(() => {
+              dispatch(
+                addUser({
+                  uid: user.uid,
+                  email: user.email,
+                  displayName: name.current.value,
+                  photoURL: finalPhotoURL,
+                })
+              );
+              navigate("/browse");
+            })
+            .catch((error) => {
+              setErrorMessage(error.message);
+            })
+            .finally(() => setIsSubmitting(false));
         })
         .catch((error) => {
           if (error.code === "auth/email-already-in-use") {
@@ -44,8 +71,8 @@ const Login = () => {
           } else {
             setErrorMessage(error.code + ": " + error.message);
           }
-        })
-        .finally(() => setIsSubmitting(false));
+          setIsSubmitting(false);
+        });
     } else {
       // Sign In
       signInWithEmailAndPassword(auth, email.current.value, password.current.value)
@@ -83,12 +110,20 @@ const Login = () => {
         </h1>
 
         {!isSignInForm && (
-          <input
-            ref={name}
-            type="text"
-            placeholder="Full Name"
-            className="p-3 my-2 w-full bg-gray-700/60 border border-gray-500 rounded"
-          />
+          <>
+            <input
+              ref={name}
+              type="text"
+              placeholder="Full Name"
+              className="p-3 my-2 w-full bg-gray-700/60 border border-gray-500 rounded"
+            />
+            <input
+              ref={photoURL}
+              type="text"
+              placeholder="Photo URL (optional)"
+              className="p-3 my-2 w-full bg-gray-700/60 border border-gray-500 rounded"
+            />
+          </>
         )}
 
         <input
