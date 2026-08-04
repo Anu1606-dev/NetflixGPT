@@ -5,6 +5,7 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../Utils/Firebase';
 import { removeUser } from '../Utils/userSlice';
 import { LOGO_URL, DEFAULT_PHOTO_URL, LANGUAGES, NAV_LINKS } from '../Utils/constants';
+import AvatarPicker from './AvatarPicker';
 
 const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   const [showLangList, setShowLangList] = useState(false);
   const [selectedLang, setSelectedLang] = useState("English");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false); // NEW
 
   const handleLangSelect = (lang) => {
     setSelectedLang(lang);
@@ -126,7 +128,15 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
                       Signed in as <span className="text-white font-medium">{user.displayName}</span>
                     </li>
                   )}
-                  <li className="px-3 py-2 hover:bg-gray-700 cursor-pointer">Manage Profiles</li>
+                  <li
+                    onClick={() => {
+                      setShowAvatarPicker(true);   // NEW
+                      setShowProfileMenu(false);
+                    }}
+                    className="px-3 py-2 hover:bg-gray-700 cursor-pointer"
+                  >
+                    Change Avatar
+                  </li>
                   <li className="px-3 py-2 hover:bg-gray-700 cursor-pointer">Account</li>
                   <li onClick={handleSignOut} className="px-3 py-2 hover:bg-gray-700 cursor-pointer">
                     Sign out
@@ -137,6 +147,10 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
           </div>
         )}
       </div>
+
+      {showAvatarPicker && (
+        <AvatarPicker onClose={() => setShowAvatarPicker(false)} />
+      )}
     </div>
   );
 };
