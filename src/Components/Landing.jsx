@@ -1,10 +1,19 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux'; // NEW
 import Header from './Header';
 
 const Landing = () => {
   const navigate = useNavigate();
   const email = useRef(null);
+  const user = useSelector((store) => store.user); // NEW: read current logged-in user
+
+  // NEW: if already logged in, skip the landing page and go straight to Browse
+  useEffect(() => {
+    if (user) {
+      navigate("/browse");
+    }
+  }, [user]);
 
   const handleGetStarted = () => {
     navigate("/login");
@@ -12,7 +21,6 @@ const Landing = () => {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
-      {/* Background layer - sits at the bottom, but still above #root's black bg since it's a normal descendant */}
       <div className="absolute inset-0 z-0">
         <img
           className="h-full w-full object-cover"
@@ -24,7 +32,6 @@ const Landing = () => {
 
       <Header showSignIn={true} />
 
-      {/* Foreground content, explicitly above the background layer */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center text-white h-full px-4">
         <h1 className="text-3xl md:text-5xl font-bold max-w-3xl mb-4 leading-tight">
           Unlimited movies, shows, and more
