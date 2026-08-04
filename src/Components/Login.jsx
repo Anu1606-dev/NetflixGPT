@@ -1,18 +1,17 @@
-import { useRef, useState, useEffect } from 'react'; // added useEffect
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux'; // added useSelector
+import { useDispatch, useSelector } from 'react-redux';
 import Header from './Header';
 import { checkValidData } from '../Utils/Validate';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from '../Utils/Firebase';
 import { addUser } from '../Utils/userSlice';
-
-const DEFAULT_PHOTO_URL = "https://github.com/Anu1606-dev/NetflixGPT/blob/main/netflix_avatar.jpg?raw=true";
+import { DEFAULT_PHOTO_URL } from '../Utils/constants';
 
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const user = useSelector((store) => store.user); // NEW: read current logged-in user
+  const user = useSelector((store) => store.user);
 
   const [isSignInForm, setIsSignInForm] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -23,7 +22,6 @@ const Login = () => {
   const password = useRef(null);
   const photoURL = useRef(null);
 
-  // NEW: if already logged in, skip this page and go straight to Browse
   useEffect(() => {
     if (user) {
       navigate("/browse");

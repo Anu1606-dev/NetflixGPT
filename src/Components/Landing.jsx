@@ -1,14 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux'; // NEW
+import { useSelector } from 'react-redux';
 import Header from './Header';
+import { LANDING_BG_URL } from '../Utils/constants';
 
 const Landing = () => {
   const navigate = useNavigate();
   const email = useRef(null);
-  const user = useSelector((store) => store.user); // NEW: read current logged-in user
+  const user = useSelector((store) => store.user);
 
-  // NEW: if already logged in, skip the landing page and go straight to Browse
   useEffect(() => {
     if (user) {
       navigate("/browse");
@@ -24,7 +24,7 @@ const Landing = () => {
       <div className="absolute inset-0 z-0">
         <img
           className="h-full w-full object-cover"
-          src="https://assets.nflxext.com/ffe/siteui/vlv3/42f3cd9f-c9a8-4cae-8c03-3e7aa13e0154/web/IN-en-20260727-TRIFECTA-perspective_83c6fd6c-bc2e-4518-80be-359a85c542a2_medium.jpg"
+          src={LANDING_BG_URL}
           alt="Netflix background"
         />
         <div className="absolute inset-0 bg-black/60"></div>
