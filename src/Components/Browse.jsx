@@ -1,11 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import Header from './Header';
 import MovieList from './MovieList';
 import useNowPlayingMovies from '../hooks/useNowPlayingMovies';
 import { IMG_CDN_URL } from '../Utils/constants';
 
 const Browse = () => {
+  const navigate = useNavigate(); // lets us redirect programmatically
+  const user = useSelector((store) => store.user); // read the logged-in user from Redux
+
+  // Runs once when this component loads, and again if `user` ever changes
+  useEffect(() => {
+    if (!user) {
+      navigate("/login"); // no user found → kick them to the login page
+    }
+  }, [user]);
+
   useNowPlayingMovies();
 
   const nowPlayingMovies = useSelector((store) => store.movies.nowPlayingMovies);
