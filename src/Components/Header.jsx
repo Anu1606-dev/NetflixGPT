@@ -15,6 +15,7 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   const [showLangList, setShowLangList] = useState(false);
   const [selectedLang, setSelectedLang] = useState("English");
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const [activeLink, setActiveLink] = useState("Home"); // NEW: tracks which tab is active
 
   const handleLangSelect = (lang) => {
     setSelectedLang(lang);
@@ -35,7 +36,7 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   const avatarUrl = user?.photoURL || DEFAULT_PHOTO_URL;
 
   return (
-    <div className="absolute z-20 px-4 md:px-8 py-3 md:py-4 bg-gradient-to-b from-black/90 to-transparent w-full flex justify-between items-center">
+    <div className="absolute z-20 px-4 md:px-8 py-3 md:py-4 w-full flex justify-between items-center bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-transparent">
       <div className="flex items-center gap-8">
         <Link to="/">
           <img
@@ -46,11 +47,16 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
         </Link>
 
         {showProfileIcon && (
-          <ul className="hidden lg:flex items-center gap-5 text-sm text-gray-200">
-            {NAV_LINKS.map((link, i) => (
+          <ul className="hidden lg:flex items-center gap-2 text-sm text-gray-200">
+            {NAV_LINKS.map((link) => (
               <li
                 key={link}
-                className={`cursor-pointer hover:text-white ${i === 0 ? "text-white font-semibold" : ""}`}
+                onClick={() => setActiveLink(link)}
+                className={
+                  activeLink === link
+                    ? "bg-white text-black rounded-full px-4 py-1.5 font-semibold cursor-pointer"
+                    : "px-4 py-1.5 hover:text-white cursor-pointer"
+                }
               >
                 {link}
               </li>
@@ -59,7 +65,7 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
         )}
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-5">
         {showSignIn && (
           <>
             <div className="relative">
@@ -96,7 +102,6 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
 
         {showProfileIcon && (
           <div className="flex items-center gap-5 text-white">
-            {/* Search icon — clean SVG, no emoji */}
             <button className="hover:opacity-80 transition" aria-label="Search">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="11" cy="11" r="7" />
@@ -104,7 +109,6 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
               </svg>
             </button>
 
-            {/* Notification bell — clean SVG, no emoji */}
             <div className="relative cursor-pointer hover:opacity-80 transition">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -115,7 +119,6 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
               </span>
             </div>
 
-            {/* Profile — hover-triggered dropdown, no click needed */}
             <div className="relative group py-2 -my-2">
               <button className="flex items-center gap-1">
                 <div className="w-8 h-8 rounded-md overflow-hidden ring-1 ring-white/20 flex-shrink-0">
@@ -136,7 +139,6 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
                 </svg>
               </button>
 
-              {/* Invisible bridge so the menu doesn't close when moving the mouse down to it */}
               <div className="absolute right-0 top-full w-48 h-2"></div>
 
               <ul className="absolute right-0 top-full mt-2 w-48 bg-black/95 border border-gray-700 rounded overflow-hidden text-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-150">
