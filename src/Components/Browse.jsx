@@ -9,6 +9,15 @@ import useTopRatedMovies from '../hooks/useTopRatedMovies';
 import useUpcomingMovies from '../hooks/useUpcomingMovies';
 import useMovieTrailer from '../hooks/useMovieTrailer';
 import { IMG_CDN_URL, BACKDROP_CDN_URL } from '../Utils/constants';
+import useTrendingAll from '../hooks/useTrendingAll';
+import useTrendingMovies from '../hooks/useTrendingMovies';
+import useTrendingPeople from '../hooks/useTrendingPeople';
+import useTrendingTV from '../hooks/useTrendingTV';
+import useAiringTodayTV from '../hooks/useAiringTodayTV';
+import useOnTheAirTV from '../hooks/useOnTheAirTV';
+import usePopularTV from '../hooks/usePopularTV';
+import useTopRatedTV from '../hooks/useTopRatedTV';
+
 
 const MIN_REVEAL_DELAY = 2500; // ms — safety buffer to hide YouTube's own buffering overlay
 const MAX_REVEAL_DELAY = 5000; // ms — hard cap so it never gets stuck on the image
@@ -26,12 +35,28 @@ const Browse = () => {
   usePopularMovies();
   useTopRatedMovies();
   useUpcomingMovies();
+  useTrendingAll();
+  useTrendingMovies();
+  useTrendingPeople();
+  useTrendingTV();
+  useAiringTodayTV();
+  useOnTheAirTV();
+  usePopularTV();
+  useTopRatedTV();
 
   const nowPlayingMovies = useSelector((store) => store.movies.nowPlayingMovies);
   const popularMovies = useSelector((store) => store.movies.popularMovies);
   const topRatedMovies = useSelector((store) => store.movies.topRatedMovies);
   const upcomingMovies = useSelector((store) => store.movies.upcomingMovies);
   const trailerVideo = useSelector((store) => store.movies.trailerVideo);
+  const trendingAll = useSelector((store) => store.trending.trendingAll);
+  const trendingMovies = useSelector((store) => store.trending.trendingMovies);
+  const trendingPeople = useSelector((store) => store.trending.trendingPeople);
+  const trendingTV = useSelector((store) => store.trending.trendingTV);
+  const airingToday = useSelector((store) => store.tv.airingToday);
+  const onTheAir = useSelector((store) => store.tv.onTheAir);
+  const popularTV = useSelector((store) => store.tv.popularTV);
+  const topRatedTV = useSelector((store) => store.tv.topRatedTV);
 
   useEffect(() => {
     if (nowPlayingMovies && nowPlayingMovies.length > 0) {
@@ -83,6 +108,12 @@ const Browse = () => {
       image: IMG_CDN_URL + movie.poster_path,
     })) || [];
 
+  const toPersonCardData = (people) =>
+    people?.map((person) => ({
+      id: person.id,
+      image: person.profile_path ? IMG_CDN_URL + person.profile_path : null,
+    })).filter((p) => p.image) || []; // skip people with no photo
+
   return (
     <div className="relative bg-black min-h-screen">
       <Header showProfileIcon={true} />
@@ -96,9 +127,8 @@ const Browse = () => {
 
         {trailerVideo?.key && (
           <div
-            className={`absolute inset-0 overflow-hidden transition-opacity duration-700 ${
-              showVideo ? "opacity-100" : "opacity-0"
-            }`}
+            className={`absolute inset-0 overflow-hidden transition-opacity duration-700 ${showVideo ? "opacity-100" : "opacity-0"
+              }`}
           >
             <div className="absolute top-1/2 left-1/2 w-[177.78vh] h-[56.25vw] min-w-full min-h-full -translate-x-1/2 -translate-y-1/2">
               <YoutubeTrailerPlayer
@@ -171,6 +201,14 @@ const Browse = () => {
         <MovieList title="Popular on Netflix" movies={toCardData(popularMovies)} />
         <MovieList title="Top Rated" movies={toCardData(topRatedMovies)} />
         <MovieList title="Upcoming" movies={toCardData(upcomingMovies)} />
+        <MovieList title="Trending Today" movies={toCardData(trendingAll)} />
+        <MovieList title="Trending Movies" movies={toCardData(trendingMovies)} />
+        <MovieList title="Trending TV Shows" movies={toCardData(trendingTV)} />
+        <MovieList title="Trending People" movies={toPersonCardData(trendingPeople)} />
+        <MovieList title="Airing Today" movies={toCardData(airingToday)} />
+        <MovieList title="On The Air" movies={toCardData(onTheAir)} />
+        <MovieList title="Popular TV Shows" movies={toCardData(popularTV)} />
+        <MovieList title="Top Rated TV Shows" movies={toCardData(topRatedTV)} />
       </div>
     </div>
   );

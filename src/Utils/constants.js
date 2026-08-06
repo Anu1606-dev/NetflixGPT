@@ -7,9 +7,9 @@ export const API_OPTIONS = {
   },
 };
 
-// Two image sizes: smaller for poster grids, larger for hero banners
 export const IMG_CDN_URL = "https://image.tmdb.org/t/p/w500";
 export const BACKDROP_CDN_URL = "https://image.tmdb.org/t/p/w1280";
+export const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 
 // Branding / static assets
 export const LOGO_URL =
