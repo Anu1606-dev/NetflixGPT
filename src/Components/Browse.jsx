@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import Header from './Header';
 import MovieList from './MovieList';
+import YoutubeTrailerPlayer from './YoutubeTrailerPlayer';
 import useNowPlayingMovies from '../hooks/useNowPlayingMovies';
 import usePopularMovies from '../hooks/usePopularMovies';
 import useTopRatedMovies from '../hooks/useTopRatedMovies';
@@ -9,8 +10,17 @@ import useUpcomingMovies from '../hooks/useUpcomingMovies';
 import useMovieTrailer from '../hooks/useMovieTrailer';
 import { IMG_CDN_URL, BACKDROP_CDN_URL } from '../Utils/constants';
 
+const MIN_REVEAL_DELAY = 2500; // ms — safety buffer to hide YouTube's own buffering overlay
+const MAX_REVEAL_DELAY = 5000; // ms — hard cap so it never gets stuck on the image
+
 const Browse = () => {
   const [isMuted, setIsMuted] = useState(true);
+  const [mainMovie, setMainMovie] = useState(null);
+  const [showVideo, setShowVideo] = useState(false);
+
+  // Tracks whether both conditions (real "playing" event + min delay) have been met
+  const playerConfirmedPlaying = useRef(false);
+  const minTimeElapsed = useRef(false);
 
   useNowPlayingMovies();
   usePopularMovies();
@@ -23,10 +33,49 @@ const Browse = () => {
   const upcomingMovies = useSelector((store) => store.movies.upcomingMovies);
   const trailerVideo = useSelector((store) => store.movies.trailerVideo);
 
-  const mainMovie = nowPlayingMovies?.[0];
-  useMovieTrailer(mainMovie?.id); // fetches trailer once mainMovie.id is known
+  useEffect(() => {
+    if (nowPlayingMovies && nowPlayingMovies.length > 0) {
+      const randomIndex = Math.floor(Math.random() * nowPlayingMovies.length);
+      setMainMovie(nowPlayingMovies[randomIndex]);
+    }
+  }, [nowPlayingMovies]);
 
-  if (!nowPlayingMovies) return null;
+  useMovieTrailer(mainMovie?.id);
+
+  const tryReveal = () => {
+    if (playerConfirmedPlaying.current && minTimeElapsed.current) {
+      setShowVideo(true);
+    }
+  };
+
+  useEffect(() => {
+    setShowVideo(false);
+    playerConfirmedPlaying.current = false;
+    minTimeElapsed.current = false;
+
+    if (!trailerVideo?.key) return;
+
+    const minTimer = setTimeout(() => {
+      minTimeElapsed.current = true;
+      tryReveal();
+    }, MIN_REVEAL_DELAY);
+
+    const hardCapTimer = setTimeout(() => {
+      setShowVideo(true); // force-reveal regardless, after the cap
+    }, MAX_REVEAL_DELAY);
+
+    return () => {
+      clearTimeout(minTimer);
+      clearTimeout(hardCapTimer);
+    };
+  }, [trailerVideo]);
+
+  const handlePlayerPlaying = () => {
+    playerConfirmedPlaying.current = true;
+    tryReveal();
+  };
+
+  if (!nowPlayingMovies || !mainMovie) return null;
 
   const toCardData = (movies) =>
     movies?.map((movie) => ({
@@ -39,27 +88,30 @@ const Browse = () => {
       <Header showProfileIcon={true} />
 
       <div className="relative mx-2 md:mx-4 mt-2 rounded-2xl overflow-hidden h-[85vh]">
-        {trailerVideo?.key ? (
-          <div className="absolute inset-0 overflow-hidden">
-            <iframe
-              className="absolute top-1/2 left-1/2 w-[177.78vh] h-[56.25vw] min-w-full min-h-full -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-              src={`https://www.youtube.com/embed/${trailerVideo.key}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&loop=1&playlist=${trailerVideo.key}&modestbranding=1&showinfo=0&rel=0`}
-              title="trailer"
-              allow="autoplay; encrypted-media"
-              frameBorder="0"
-            />
+        <img
+          className="absolute inset-0 h-full w-full object-cover"
+          src={BACKDROP_CDN_URL + mainMovie.backdrop_path}
+          alt={mainMovie.title}
+        />
+
+        {trailerVideo?.key && (
+          <div
+            className={`absolute inset-0 overflow-hidden transition-opacity duration-700 ${
+              showVideo ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <div className="absolute top-1/2 left-1/2 w-[177.78vh] h-[56.25vw] min-w-full min-h-full -translate-x-1/2 -translate-y-1/2">
+              <YoutubeTrailerPlayer
+                videoId={trailerVideo.key}
+                isMuted={isMuted}
+                onPlaying={handlePlayerPlaying}
+              />
+            </div>
           </div>
-        ) : (
-          <img
-            className="h-full w-full object-cover"
-            src={BACKDROP_CDN_URL + mainMovie.backdrop_path}
-            alt={mainMovie.title}
-          />
         )}
 
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
 
-        {/* Mute toggle */}
         <button
           onClick={() => setIsMuted(!isMuted)}
           className="absolute top-6 right-6 w-10 h-10 rounded-full border border-white/40 bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition"
@@ -86,8 +138,6 @@ const Browse = () => {
           <div className="flex items-center gap-2 text-sm md:text-base text-gray-200 mb-4">
             <span>Series</span>
             <span>•</span>
-            <span>{mainMovie.genre_ids?.length ? "Drama" : ""}</span>
-            <span>•</span>
             <span>{mainMovie.release_date?.slice(0, 4)}</span>
             <span>•</span>
             <span>{mainMovie.adult ? "A" : "U/A 13+"}</span>
@@ -113,12 +163,6 @@ const Browse = () => {
               More Info
             </button>
           </div>
-        </div>
-
-        <div className="absolute bottom-6 right-6 flex gap-2">
-          <span className="bg-black/60 backdrop-blur-sm text-white text-xs px-4 py-2 rounded-full flex items-center gap-2">
-            🍿 Looking for something new to watch?
-          </span>
         </div>
       </div>
 
