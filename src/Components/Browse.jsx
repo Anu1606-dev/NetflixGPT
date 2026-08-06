@@ -102,11 +102,17 @@ const Browse = () => {
 
   if (!nowPlayingMovies || !mainMovie) return null;
 
-  const toCardData = (movies) =>
-    movies?.map((movie) => ({
-      id: movie.id,
-      image: IMG_CDN_URL + movie.poster_path,
-    })) || [];
+  // defaultMediaType is used for single-type endpoints (Popular Movies, Top Rated TV, etc.)
+  // item.media_type is used when present (trending/all mixes movies, TV, and people together)
+  const toCardData = (items, defaultMediaType = "movie") =>
+    items
+      ?.filter((item) => item.media_type !== "person" && item.backdrop_path)
+      .map((item) => ({
+        id: item.id,
+        image: BACKDROP_CDN_URL + item.backdrop_path,
+        title: item.title || item.name, // movies use "title", TV shows use "name"
+        mediaType: item.media_type || defaultMediaType,
+      })) || [];
 
   const toPersonCardData = (people) =>
     people?.map((person) => ({
@@ -197,18 +203,18 @@ const Browse = () => {
       </div>
 
       <div className="relative mt-4 z-10">
-        <MovieList title="Now Playing" movies={toCardData(nowPlayingMovies)} />
-        <MovieList title="Popular on Netflix" movies={toCardData(popularMovies)} />
-        <MovieList title="Top Rated" movies={toCardData(topRatedMovies)} />
-        <MovieList title="Upcoming" movies={toCardData(upcomingMovies)} />
+        <MovieList title="Now Playing" movies={toCardData(nowPlayingMovies, "movie")} />
+        <MovieList title="Popular on Netflix" movies={toCardData(popularMovies, "movie")} />
+        <MovieList title="Top Rated" movies={toCardData(topRatedMovies, "movie")} />
+        <MovieList title="Upcoming" movies={toCardData(upcomingMovies, "movie")} />
+
         <MovieList title="Trending Today" movies={toCardData(trendingAll)} />
-        <MovieList title="Trending Movies" movies={toCardData(trendingMovies)} />
-        <MovieList title="Trending TV Shows" movies={toCardData(trendingTV)} />
-        <MovieList title="Trending People" movies={toPersonCardData(trendingPeople)} />
-        <MovieList title="Airing Today" movies={toCardData(airingToday)} />
-        <MovieList title="On The Air" movies={toCardData(onTheAir)} />
-        <MovieList title="Popular TV Shows" movies={toCardData(popularTV)} />
-        <MovieList title="Top Rated TV Shows" movies={toCardData(topRatedTV)} />
+        <MovieList title="Trending Movies" movies={toCardData(trendingMovies, "movie")} />
+        <MovieList title="Trending TV Shows" movies={toCardData(trendingTV, "tv")} />
+        <MovieList title="Airing Today" movies={toCardData(airingToday, "tv")} />
+        <MovieList title="On The Air" movies={toCardData(onTheAir, "tv")} />
+        <MovieList title="Popular TV Shows" movies={toCardData(popularTV, "tv")} />
+        <MovieList title="Top Rated TV Shows" movies={toCardData(topRatedTV, "tv")} />
       </div>
     </div>
   );

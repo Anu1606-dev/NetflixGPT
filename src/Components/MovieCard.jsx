@@ -1,13 +1,57 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
+import useTitleLogo from '../hooks/useTitleLogo';
 
-const MovieCard = ({ posterUrl }) => {
+const MovieCard = ({ posterUrl, title, id, mediaType = "movie" }) => {
+  const cardRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Only start fetching this card's logo once it's actually scrolled near the viewport
+  useEffect(() => {
+    if (!cardRef.current || isVisible) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px" } // start loading slightly before it's fully visible
+    );
+
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, [isVisible]);
+
+  const logoUrl = useTitleLogo(id, mediaType, isVisible);
+
   return (
-    <div className="w-36 md:w-48 flex-shrink-0 mr-2 cursor-pointer transition duration-200 hover:scale-105">
-      <img
-        className="rounded-md w-full h-full object-cover"
-        src={posterUrl}
-        alt="movie card"
-      />
+    <div ref={cardRef} className="w-64 md:w-80 flex-shrink-0 mr-3 cursor-pointer group/card">
+      <div className="relative aspect-video rounded-2xl overflow-hidden ring-1 ring-white/10 transition-transform duration-200 group-hover/card:scale-105 shadow-lg bg-gray-900">
+        <img
+          className="w-full h-full object-cover"
+          src={posterUrl}
+          alt={title || "movie card"}
+        />
+
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none"></div>
+
+        <div className="absolute inset-x-0 bottom-0 px-4 pb-4 flex items-end min-h-[3rem]">
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt={title}
+              className="max-h-16 max-w-[85%] object-contain drop-shadow-lg"
+            />
+          ) : (
+            title && (
+              <p className="text-white text-lg md:text-xl font-bold drop-shadow-md leading-tight line-clamp-2">
+                {title}
+              </p>
+            )
+          )}
+        </div>
+      </div>
     </div>
   );
 };
