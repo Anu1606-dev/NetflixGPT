@@ -7,7 +7,9 @@ export const API_OPTIONS = {
   },
 };
 
+// Two image sizes: smaller for poster grids, larger for hero banners
 export const IMG_CDN_URL = "https://image.tmdb.org/t/p/w500";
+export const BACKDROP_CDN_URL = "https://image.tmdb.org/t/p/w1280";
 
 // Branding / static assets
 export const LOGO_URL =
@@ -16,11 +18,9 @@ export const LOGO_URL =
 export const LANDING_BG_URL =
   "https://assets.nflxext.com/ffe/siteui/vlv3/42f3cd9f-c9a8-4cae-8c03-3e7aa13e0154/web/IN-en-20260727-TRIFECTA-perspective_83c6fd6c-bc2e-4518-80be-359a85c542a2_medium.jpg";
 
-// Default avatar assigned automatically on sign up
 export const DEFAULT_PHOTO_URL =
   "https://i.pinimg.com/736x/d7/19/6a/d7196adc7c4f353d52235c5e6ed12e65.jpg";
 
-// Preset avatar options shown in the "Change Avatar" picker
 export const AVATARS = [
   "https://i.pinimg.com/736x/d7/19/6a/d7196adc7c4f353d52235c5e6ed12e65.jpg",
   "https://github.com/Anu1606-dev/NetflixGPT/blob/main/netflix_avatar.jpg?raw=true",
@@ -28,7 +28,6 @@ export const AVATARS = [
   "https://occ-0-2232-2186.1.nflxso.net/dnm/api/v6/SO2HoVCx33X8phZh2pZZmQ4QgNY/AAAABRSzRacW3r_cmBGpsUArW055MeDHm-e-5QQ2S2dJhAKGb1wxxJzhDtHqe7WXCr-0_JqehuLMy0nphR19_S1J5AA4TQe4O3A.png?r=d8a",
 ];
 
-// UI text / lists
 export const LANGUAGES = ["English", "हिन्दी"];
 
 export const NAV_LINKS = [
