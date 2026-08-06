@@ -14,8 +14,7 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
 
   const [showLangList, setShowLangList] = useState(false);
   const [selectedLang, setSelectedLang] = useState("English");
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showAvatarPicker, setShowAvatarPicker] = useState(false); // NEW
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
 
   const handleLangSelect = (lang) => {
     setSelectedLang(lang);
@@ -96,21 +95,29 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
         )}
 
         {showProfileIcon && (
-          <div className="flex items-center gap-4 text-white">
-            <span className="cursor-pointer text-lg">🔍</span>
+          <div className="flex items-center gap-5 text-white">
+            {/* Search icon — clean SVG, no emoji */}
+            <button className="hover:opacity-80 transition" aria-label="Search">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="7" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </button>
 
-            <div className="relative cursor-pointer">
-              <span className="text-lg">🔔</span>
+            {/* Notification bell — clean SVG, no emoji */}
+            <div className="relative cursor-pointer hover:opacity-80 transition">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
               <span className="absolute -top-2 -right-2 bg-red-600 text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
                 12
               </span>
             </div>
 
-            <div className="relative">
-              <button
-                onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="flex items-center gap-1"
-              >
+            {/* Profile — hover-triggered dropdown, no click needed */}
+            <div className="relative group py-2 -my-2">
+              <button className="flex items-center gap-1">
                 <div className="w-8 h-8 rounded-md overflow-hidden ring-1 ring-white/20 flex-shrink-0">
                   <img
                     className="w-full h-full object-cover block"
@@ -118,31 +125,37 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
                     alt="User Avatar"
                   />
                 </div>
-                <span className="text-xs">▼</span>
+                <svg
+                  className="w-3 h-3 transition-transform group-hover:rotate-180"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
               </button>
 
-              {showProfileMenu && (
-                <ul className="absolute right-0 mt-2 w-48 bg-black/95 border border-gray-700 rounded overflow-hidden text-sm">
-                  {user?.displayName && (
-                    <li className="px-3 py-2 text-gray-400 border-b border-gray-700 cursor-default">
-                      Signed in as <span className="text-white font-medium">{user.displayName}</span>
-                    </li>
-                  )}
-                  <li
-                    onClick={() => {
-                      setShowAvatarPicker(true);   // NEW
-                      setShowProfileMenu(false);
-                    }}
-                    className="px-3 py-2 hover:bg-gray-700 cursor-pointer"
-                  >
-                    Change Avatar
+              {/* Invisible bridge so the menu doesn't close when moving the mouse down to it */}
+              <div className="absolute right-0 top-full w-48 h-2"></div>
+
+              <ul className="absolute right-0 top-full mt-2 w-48 bg-black/95 border border-gray-700 rounded overflow-hidden text-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-150">
+                {user?.displayName && (
+                  <li className="px-3 py-2 text-gray-400 border-b border-gray-700 cursor-default">
+                    Signed in as <span className="text-white font-medium">{user.displayName}</span>
                   </li>
-                  <li className="px-3 py-2 hover:bg-gray-700 cursor-pointer">Account</li>
-                  <li onClick={handleSignOut} className="px-3 py-2 hover:bg-gray-700 cursor-pointer">
-                    Sign out
-                  </li>
-                </ul>
-              )}
+                )}
+                <li
+                  onClick={() => setShowAvatarPicker(true)}
+                  className="px-3 py-2 hover:bg-gray-700 cursor-pointer"
+                >
+                  Change Avatar
+                </li>
+                <li className="px-3 py-2 hover:bg-gray-700 cursor-pointer">Account</li>
+                <li onClick={handleSignOut} className="px-3 py-2 hover:bg-gray-700 cursor-pointer">
+                  Sign out
+                </li>
+              </ul>
             </div>
           </div>
         )}
