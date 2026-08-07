@@ -20,7 +20,7 @@ const Landing = () => {
   };
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden">
+    <div className="relative min-h-screen w-screen overflow-hidden">
       <div className="absolute inset-0 z-0">
         <img
           className="h-full w-full object-cover"
@@ -32,14 +32,14 @@ const Landing = () => {
 
       <Header showSignIn={true} />
 
-      <div className="relative z-10 flex flex-col items-center justify-center text-center text-white h-full px-4">
-        <h1 className="text-3xl md:text-5xl font-bold max-w-3xl mb-4 leading-tight">
+      <div className="relative z-10 flex flex-col items-center justify-center text-center text-white min-h-screen px-4 py-24">
+        <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold max-w-3xl mb-3 md:mb-4 leading-tight">
           Unlimited movies, shows, and more
         </h1>
-        <p className="text-lg md:text-2xl mb-4">
+        <p className="text-base sm:text-lg md:text-2xl mb-3 md:mb-4">
           Starts at ₹149. Cancel at any time.
         </p>
-        <p className="mb-4 text-base md:text-lg max-w-xl">
+        <p className="mb-4 text-sm sm:text-base md:text-lg max-w-xl">
           Ready to watch? Enter your email to create or restart your membership.
         </p>
 
@@ -48,13 +48,13 @@ const Landing = () => {
             ref={email}
             type="email"
             placeholder="Email address"
-            className="flex-1 p-4 rounded bg-black/40 border border-gray-400 text-white placeholder-gray-300"
+            className="flex-1 p-3 md:p-4 rounded bg-black/40 border border-gray-400 text-white placeholder-gray-300 text-sm md:text-base"
           />
           <button
             onClick={handleGetStarted}
-            className="bg-red-600 hover:bg-red-700 text-white text-lg md:text-xl px-6 md:px-8 py-4 rounded font-semibold whitespace-nowrap flex items-center justify-center gap-1"
+            className="bg-red-600 hover:bg-red-700 text-white text-base sm:text-lg md:text-xl px-5 sm:px-6 md:px-8 py-3 md:py-4 rounded font-semibold whitespace-nowrap flex items-center justify-center gap-1"
           >
-            Get Started <span className="text-2xl">›</span>
+            Get Started <span className="text-xl md:text-2xl">›</span>
           </button>
         </div>
       </div>

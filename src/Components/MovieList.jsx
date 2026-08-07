@@ -15,15 +15,14 @@ const MovieList = ({ title, movies }) => {
   };
 
   return (
-    <div className="px-4 md:px-12 my-4 group relative">
-      <h2 className="text-white text-lg md:text-xl font-semibold mb-2">
+    <div className="px-3 sm:px-6 md:px-12 my-3 md:my-4 group relative">
+      <h2 className="text-white text-base sm:text-lg md:text-xl font-semibold mb-2">
         {title}
       </h2>
 
-      {/* Left arrow - shows on hover over the row */}
       <button
         onClick={() => scroll("left")}
-        className="hidden group-hover:flex absolute left-0 top-1/2 mt-4 -translate-y-1/2 z-10 h-24 w-10 bg-black/50 hover:bg-black/80 text-white items-center justify-center text-2xl"
+        className="hidden md:flex md:opacity-0 md:group-hover:opacity-100 absolute left-0 top-1/2 mt-4 -translate-y-1/2 z-10 h-20 md:h-24 w-8 md:w-10 bg-black/50 hover:bg-black/80 text-white items-center justify-center text-xl md:text-2xl transition-opacity"
       >
         ‹
       </button>
@@ -43,10 +42,9 @@ const MovieList = ({ title, movies }) => {
         ))}
       </div>
 
-      {/* Right arrow */}
       <button
         onClick={() => scroll("right")}
-        className="hidden group-hover:flex absolute right-0 top-1/2 mt-4 -translate-y-1/2 z-10 h-24 w-10 bg-black/50 hover:bg-black/80 text-white items-center justify-center text-2xl"
+        className="hidden md:flex md:opacity-0 md:group-hover:opacity-100 absolute right-0 top-1/2 mt-4 -translate-y-1/2 z-10 h-20 md:h-24 w-8 md:w-10 bg-black/50 hover:bg-black/80 text-white items-center justify-center text-xl md:text-2xl transition-opacity"
       >
         ›
       </button>

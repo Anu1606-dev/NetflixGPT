@@ -30,16 +30,16 @@ const AvatarPicker = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
-      <div className="bg-[#141414] border border-gray-700 rounded-lg p-6 w-full max-w-md text-white">
-        <h2 className="text-xl font-semibold mb-4">Choose your avatar</h2>
+      <div className="bg-[#141414] border border-gray-700 rounded-lg p-4 sm:p-6 w-full max-w-sm sm:max-w-md text-white mx-4">
+        <h2 className="text-lg sm:text-xl font-semibold mb-4">Choose your avatar</h2>
 
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
           {AVATARS.map((url) => (
             <button
               key={url}
               onClick={() => saveAvatar(url)}
               disabled={isSaving}
-              className="w-16 h-16 rounded-md overflow-hidden ring-2 ring-transparent hover:ring-white transition disabled:opacity-50"
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-md overflow-hidden ring-2 ring-transparent hover:ring-white transition disabled:opacity-50"
             >
               <img src={url} alt="avatar option" className="w-full h-full object-cover" />
             </button>
@@ -58,7 +58,7 @@ const AvatarPicker = ({ onClose }) => {
           <button
             onClick={() => customUrl && saveAvatar(customUrl)}
             disabled={isSaving || !customUrl}
-            className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm font-medium disabled:opacity-50"
+            className="bg-red-600 hover:bg-red-700 px-3 sm:px-4 py-2 rounded text-sm font-medium disabled:opacity-50"
           >
             Use
           </button>

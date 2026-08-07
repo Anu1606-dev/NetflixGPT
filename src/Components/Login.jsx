@@ -43,7 +43,6 @@ const Login = () => {
     setIsSubmitting(true);
 
     if (!isSignInForm) {
-      // Sign Up
       createUserWithEmailAndPassword(auth, email.current.value, password.current.value)
         .then((userCredential) => {
           const user = userCredential.user;
@@ -80,7 +79,6 @@ const Login = () => {
           setIsSubmitting(false);
         });
     } else {
-      // Sign In
       signInWithEmailAndPassword(auth, email.current.value, password.current.value)
         .then((userCredential) => {
           console.log("User signed in:", userCredential.user);
@@ -104,14 +102,14 @@ const Login = () => {
   };
 
   return (
-    <div className="relative h-screen w-screen bg-gradient-to-b from-[#2b0000] via-black to-black">
+    <div className="relative min-h-screen w-screen bg-gradient-to-b from-[#2b0000] via-black to-black">
       <Header />
 
       <form
         onSubmit={(e) => e.preventDefault()}
-        className="w-full max-w-md mx-auto pt-32 sm:pt-40 p-8 sm:p-10 text-white"
+        className="w-full max-w-md mx-auto pt-24 sm:pt-32 md:pt-40 px-5 sm:px-8 md:px-10 py-6 sm:py-8 md:py-10 text-white"
       >
-        <h1 className="font-bold text-3xl mb-6">
+        <h1 className="font-bold text-2xl sm:text-3xl mb-6">
           {isSignInForm ? "Sign In" : "Sign Up"}
         </h1>
 
@@ -121,13 +119,13 @@ const Login = () => {
               ref={name}
               type="text"
               placeholder="Full Name"
-              className="p-3 my-2 w-full bg-gray-700/60 border border-gray-500 rounded"
+              className="p-3 my-2 w-full bg-gray-700/60 border border-gray-500 rounded text-sm sm:text-base"
             />
             <input
               ref={photoURL}
               type="text"
               placeholder="Photo URL (optional)"
-              className="p-3 my-2 w-full bg-gray-700/60 border border-gray-500 rounded"
+              className="p-3 my-2 w-full bg-gray-700/60 border border-gray-500 rounded text-sm sm:text-base"
             />
           </>
         )}
@@ -136,29 +134,29 @@ const Login = () => {
           ref={email}
           type="text"
           placeholder="Email Address"
-          className="p-3 my-2 w-full bg-gray-700/60 border border-gray-500 rounded"
+          className="p-3 my-2 w-full bg-gray-700/60 border border-gray-500 rounded text-sm sm:text-base"
         />
         <input
           ref={password}
           type="password"
           placeholder="Password"
-          className="p-3 my-2 w-full bg-gray-700/60 border border-gray-500 rounded"
+          className="p-3 my-2 w-full bg-gray-700/60 border border-gray-500 rounded text-sm sm:text-base"
         />
 
         {errorMessage && (
-          <p className="text-red-500 font-medium py-1">{errorMessage}</p>
+          <p className="text-red-500 font-medium py-1 text-sm sm:text-base">{errorMessage}</p>
         )}
 
         <button
           type="submit"
           onClick={handleButtonClick}
           disabled={isSubmitting}
-          className="p-3 my-4 w-full bg-red-600 hover:bg-red-700 rounded font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-3 my-4 w-full bg-red-600 hover:bg-red-700 rounded font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
         >
           {isSubmitting ? "Please wait..." : isSignInForm ? "Sign In" : "Sign Up"}
         </button>
 
-        <p className="text-gray-400 mt-6 cursor-pointer" onClick={toggleSignInForm}>
+        <p className="text-gray-400 mt-6 cursor-pointer text-sm sm:text-base" onClick={toggleSignInForm}>
           {isSignInForm
             ? "New to Netflix? Sign Up Now"
             : "Already Registered? Sign In Now"}
