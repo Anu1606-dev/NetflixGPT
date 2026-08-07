@@ -22,7 +22,7 @@ const Body = () => {
     });
 
     return () => unsubscribe(); // cleanup on unmount
-  }, []);
+  }, [dispatch]); // Added dispatch to the dependency array to avoid warnings
 
   const appRouter = createBrowserRouter([
     { path: "/", element: <Landing /> },
