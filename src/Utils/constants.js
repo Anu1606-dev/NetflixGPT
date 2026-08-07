@@ -28,6 +28,9 @@ export const AVATARS = [
   "https://occ-0-2232-2186.1.nflxso.net/dnm/api/v6/SO2HoVCx33X8phZh2pZZmQ4QgNY/AAAABRSzRacW3r_cmBGpsUArW055MeDHm-e-5QQ2S2dJhAKGb1wxxJzhDtHqe7WXCr-0_JqehuLMy0nphR19_S1J5AA4TQe4O3A.png?r=d8a",
 ];
 
+export const GEMINI_API_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+
 export const LANGUAGES = ["English", "हिन्दी"];
 
 export const NAV_LINKS = [

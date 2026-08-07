@@ -5,12 +5,14 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../Utils/Firebase';
 import { removeUser } from '../Utils/userSlice';
 import { LOGO_URL, DEFAULT_PHOTO_URL, LANGUAGES, NAV_LINKS } from '../Utils/constants';
-import AvatarPicker from './AvatarPicker';
+import AvatarPicker from './AvatarPicker';// skip if already imported
+import { toggleGptSearchView } from '../Utils/gptSlice';
 
 const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((store) => store.user);
+  const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
 
   const [showLangList, setShowLangList] = useState(false);
   const [selectedLang, setSelectedLang] = useState("English");
@@ -59,14 +61,14 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
         <Link to="/">
           <img
             className="w-20 sm:w-24 md:w-32 cursor-pointer"
-            src={LOGO_URL}
+            src={LOGO_URL} // here comes the LOGO
             alt="NetflixGPT Logo"
           />
         </Link>
 
         {showProfileIcon && (
           <ul className="hidden lg:flex items-center gap-2 text-sm text-gray-200">
-            {NAV_LINKS.map((link) => (
+            {NAV_LINKS.map((link) => ( // nav menus like Home, TV Shows, Movies, etc.
               <li
                 key={link}
                 onClick={() => setActiveLink(link)}
@@ -136,6 +138,13 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
 
         {showProfileIcon && (
           <div className="flex items-center gap-3 sm:gap-4 md:gap-5 text-white">
+            <button
+              onClick={() => dispatch(toggleGptSearchView())}
+              className="hidden sm:block bg-white text-black text-sm font-semibold px-3 py-1.5 rounded hover:bg-gray-200"
+            >
+              {showGptSearch ? "Browse" : "Search by GPT"}
+            </button>
+
             <button className="hover:opacity-80 transition" aria-label="Search">
               <svg width="18" height="18" className="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="11" cy="11" r="7" />
@@ -179,9 +188,8 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
               <div className="absolute right-0 top-full w-40 sm:w-48 h-2"></div>
 
               <ul
-                className={`absolute right-0 top-full mt-2 w-40 sm:w-48 bg-black/95 border border-gray-700 rounded overflow-hidden text-sm transition-opacity duration-150 ${
-                  showProfileMenu ? "opacity-100 visible" : "opacity-0 invisible"
-                } group-hover:opacity-100 group-hover:visible`}
+                className={`absolute right-0 top-full mt-2 w-40 sm:w-48 bg-black/95 border border-gray-700 rounded overflow-hidden text-sm transition-opacity duration-150 ${showProfileMenu ? "opacity-100 visible" : "opacity-0 invisible"
+                  } group-hover:opacity-100 group-hover:visible`}
               >
                 {user?.displayName && (
                   <li className="px-3 py-2 text-gray-400 border-b border-gray-700 cursor-default truncate">
@@ -216,9 +224,8 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
                 setActiveLink(link);
                 setShowMobileNav(false);
               }}
-              className={`px-6 py-3 border-b border-gray-800 ${
-                activeLink === link ? "font-semibold text-white" : "text-gray-300"
-              }`}
+              className={`px-6 py-3 border-b border-gray-800 ${activeLink === link ? "font-semibold text-white" : "text-gray-300"
+                }`}
             >
               {link}
             </li>
