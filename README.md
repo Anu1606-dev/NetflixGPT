@@ -133,3 +133,6 @@ src/
 ## 👩‍💻 Author
 
 Built by Anushka Sarkar as a personal project to practice React, state management, authentication, and API integration.
+
+Project Console: https://console.firebase.google.com/project/netflixgpt-a03a2/overview
+Hosting URL: https://netflixgpt-a03a2.web.app
