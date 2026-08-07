@@ -13,7 +13,7 @@ const Landing = () => {
     if (user) {
       navigate("/browse");
     }
-  }, [user]);
+  }, [user, navigate]);
 
   const handleGetStarted = () => {
     navigate("/login");

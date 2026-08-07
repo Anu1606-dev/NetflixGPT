@@ -26,7 +26,7 @@ const Login = () => {
     if (user) {
       navigate("/browse");
     }
-  }, [user]);
+  }, [user, navigate]);
 
   const toggleSignInForm = () => {
     setIsSignInForm(!isSignInForm);

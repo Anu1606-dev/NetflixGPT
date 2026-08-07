@@ -15,7 +15,7 @@ import useAiringTodayTV from '../hooks/useAiringTodayTV';
 import useOnTheAirTV from '../hooks/useOnTheAirTV';
 import usePopularTV from '../hooks/usePopularTV';
 import useTopRatedTV from '../hooks/useTopRatedTV';
-import { IMG_CDN_URL, BACKDROP_CDN_URL } from '../Utils/constants';
+import { BACKDROP_CDN_URL } from '../Utils/constants';
 
 const MIN_REVEAL_DELAY = 2500;
 const MAX_REVEAL_DELAY = 5000;
