@@ -4,32 +4,33 @@ const GptSearchBar = ({ onSearch, isSearching }) => {
   const searchText = useRef(null);
 
   const handleSubmit = (e) => {
-    e.preventDefault(); // stops the page from reloading on Enter
+    e.preventDefault();
     const query = searchText.current.value.trim();
-    if (query) onSearch(query);
+    if (!query || isSearching) return;
+    onSearch(query);
+    searchText.current.value = "";
   };
 
   return (
-    <div className="pt-32 sm:pt-40 flex justify-center px-4">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-2xl flex flex-col sm:flex-row gap-2 bg-black/60 p-3 sm:p-4 rounded-lg"
+    <form
+      onSubmit={handleSubmit}
+      className="w-full max-w-3xl mx-auto flex gap-2 bg-black/80 border border-gray-700 p-2 sm:p-3 rounded-full"
+    >
+      <input
+        ref={searchText}
+        type="text"
+        placeholder={isSearching ? "Thinking..." : "Ask for a movie, mood, or vibe..."}
+        disabled={isSearching}
+        className="flex-1 px-4 py-2 rounded-full bg-transparent text-white text-sm sm:text-base outline-none disabled:opacity-50"
+      />
+      <button
+        type="submit"
+        disabled={isSearching}
+        className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-full font-semibold text-sm sm:text-base disabled:opacity-50"
       >
-        <input
-          ref={searchText}
-          type="text"
-          placeholder="What do you want to watch today?"
-          className="flex-1 p-3 rounded bg-gray-800 border border-gray-600 text-white text-sm sm:text-base"
-        />
-        <button
-          type="submit"
-          disabled={isSearching}
-          className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded font-semibold disabled:opacity-50"
-        >
-          {isSearching ? "Searching..." : "Search"}
-        </button>
-      </form>
-    </div>
+        {isSearching ? "..." : "Send"}
+      </button>
+    </form>
   );
 };
 

@@ -16,9 +16,11 @@ const MovieList = ({ title, movies }) => {
 
   return (
     <div className="px-3 sm:px-6 md:px-12 my-3 md:my-4 group relative">
-      <h2 className="text-white text-base sm:text-lg md:text-xl font-semibold mb-2">
-        {title}
-      </h2>
+      {title && (
+        <h2 className="text-white text-base sm:text-lg md:text-xl font-semibold mb-2">
+          {title}
+        </h2>
+      )}
 
       <button
         onClick={() => scroll("left")}

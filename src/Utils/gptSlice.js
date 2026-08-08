@@ -3,20 +3,34 @@ import { createSlice } from "@reduxjs/toolkit";
 const gptSlice = createSlice({
   name: "gpt",
   initialState: {
-    showGptSearch: false,   // is the GPT search screen open or not
-    gptMovieNames: null,    // ["Movie A", "Movie B", ...]
-    gptMovieResults: null,  // matching TMDB data for each name
+    showGptSearch: false,
+    conversation: [], // [{ role: 'user'|'assistant', text, movies? }]
   },
   reducers: {
     toggleGptSearchView: (state) => {
       state.showGptSearch = !state.showGptSearch;
     },
-    addGptMovieResult: (state, action) => {
-      state.gptMovieNames = action.payload.movieNames;
-      state.gptMovieResults = action.payload.movieResults;
+    addUserMessage: (state, action) => {
+      state.conversation.push({ role: "user", text: action.payload });
+    },
+    addAssistantMessage: (state, action) => {
+      state.conversation.push({
+        role: "assistant",
+        text: action.payload.text,
+        movies: action.payload.movies || [],
+      });
+    },
+    resetConversation: (state) => {
+      state.conversation = [];
     },
   },
 });
 
-export const { toggleGptSearchView, addGptMovieResult } = gptSlice.actions;
+export const {
+  toggleGptSearchView,
+  addUserMessage,
+  addAssistantMessage,
+  resetConversation,
+} = gptSlice.actions;
+
 export default gptSlice.reducer;
