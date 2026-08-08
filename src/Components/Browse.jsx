@@ -34,13 +34,16 @@ const Browse = () => {
   const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
   const handleGptSearch = useGptSearch();
   const [isSearching, setIsSearching] = useState(false);
+  const [gptError, setGptError] = useState(null);
 
   const onGptSearch = async (query) => {
     setIsSearching(true);
+    setGptError(null);
     try {
       await handleGptSearch(query);
     } catch (err) {
       console.error("GPT search failed:", err);
+      setGptError(err.message || "Something went wrong. Check the browser console for details.");
     } finally {
       setIsSearching(false);
     }
@@ -132,6 +135,9 @@ const Browse = () => {
       {showGptSearch ? (
         <>
           <GptSearchBar onSearch={onGptSearch} isSearching={isSearching} />
+          {gptError && (
+            <p className="text-red-500 text-center mt-4 px-4">{gptError}</p>
+          )}
           <GptMovieSuggestions />
         </>
       ) : (
