@@ -4,9 +4,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { signOut } from 'firebase/auth';
 import { auth } from '../Utils/Firebase';
 import { removeUser } from '../Utils/userSlice';
-import { LOGO_URL, DEFAULT_PHOTO_URL, LANGUAGES, NAV_LINKS } from '../Utils/constants';
-import AvatarPicker from './AvatarPicker';// skip if already imported
 import { toggleGptSearchView } from '../Utils/gptSlice';
+import { LOGO_URL, DEFAULT_PHOTO_URL, LANGUAGES, NAV_LINKS } from '../Utils/constants';
+import AvatarPicker from './AvatarPicker';
 
 const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   const navigate = useNavigate();
@@ -61,14 +61,14 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
         <Link to="/">
           <img
             className="w-20 sm:w-24 md:w-32 cursor-pointer"
-            src={LOGO_URL} // here comes the LOGO
+            src={LOGO_URL}
             alt="NetflixGPT Logo"
           />
         </Link>
 
-        {showProfileIcon && (
+        {showProfileIcon && !showGptSearch && (
           <ul className="hidden lg:flex items-center gap-2 text-sm text-gray-200">
-            {NAV_LINKS.map((link) => ( // nav menus like Home, TV Shows, Movies, etc.
+            {NAV_LINKS.map((link) => (
               <li
                 key={link}
                 onClick={() => setActiveLink(link)}
@@ -84,7 +84,7 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
           </ul>
         )}
 
-        {showProfileIcon && (
+        {showProfileIcon && !showGptSearch && (
           <button
             className="lg:hidden text-white"
             onClick={() => setShowMobileNav(!showMobileNav)}
@@ -138,29 +138,53 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
 
         {showProfileIcon && (
           <div className="flex items-center gap-3 sm:gap-4 md:gap-5 text-white">
+            {/* GPT search toggle — rounded-full pill matching Play/More Info buttons */}
             <button
               onClick={() => dispatch(toggleGptSearchView())}
-              className="hidden sm:block bg-white text-black text-sm font-semibold px-3 py-1.5 rounded hover:bg-gray-200"
+              className="hidden sm:flex items-center gap-1.5 bg-white text-black text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full hover:bg-gray-200 transition"
             >
-              {showGptSearch ? "Browse" : "Search by GPT"}
+              {showGptSearch ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                    <rect x="14" y="14" width="7" height="7" rx="1" />
+                  </svg>
+                  Browse
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
+                    <path d="M19 13l.75 2.25L22 16l-2.25.75L19 19l-.75-2.25L16 16l2.25-.75L19 13z" />
+                    <path d="M5 13l.5 1.5L7 15l-1.5.5L5 17l-.5-1.5L3 15l1.5-.5L5 13z" />
+                  </svg>
+                  Search by GPT
+                </>
+              )}
             </button>
 
-            <button className="hover:opacity-80 transition" aria-label="Search">
-              <svg width="18" height="18" className="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="7" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </button>
+            {!showGptSearch && (
+              <>
+                <button className="hover:opacity-80 transition" aria-label="Search">
+                  <svg width="18" height="18" className="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="7" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </button>
 
-            <div className="relative cursor-pointer hover:opacity-80 transition">
-              <svg width="18" height="18" className="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
-              <span className="absolute -top-2 -right-2 bg-red-600 text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
-                12
-              </span>
-            </div>
+                <div className="relative cursor-pointer hover:opacity-80 transition">
+                  <svg width="18" height="18" className="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                  </svg>
+                  <span className="absolute -top-2 -right-2 bg-red-600 text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+                    12
+                  </span>
+                </div>
+              </>
+            )}
 
             <div ref={profileRef} className="relative group py-2 -my-2">
               <button
@@ -188,8 +212,9 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
               <div className="absolute right-0 top-full w-40 sm:w-48 h-2"></div>
 
               <ul
-                className={`absolute right-0 top-full mt-2 w-40 sm:w-48 bg-black/95 border border-gray-700 rounded overflow-hidden text-sm transition-opacity duration-150 ${showProfileMenu ? "opacity-100 visible" : "opacity-0 invisible"
-                  } group-hover:opacity-100 group-hover:visible`}
+                className={`absolute right-0 top-full mt-2 w-40 sm:w-48 bg-black/95 border border-gray-700 rounded overflow-hidden text-sm transition-opacity duration-150 ${
+                  showProfileMenu ? "opacity-100 visible" : "opacity-0 invisible"
+                } group-hover:opacity-100 group-hover:visible`}
               >
                 {user?.displayName && (
                   <li className="px-3 py-2 text-gray-400 border-b border-gray-700 cursor-default truncate">
@@ -215,7 +240,7 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
         )}
       </div>
 
-      {showMobileNav && showProfileIcon && (
+      {showMobileNav && showProfileIcon && !showGptSearch && (
         <ul className="lg:hidden absolute top-full left-0 w-full bg-black/95 border-t border-gray-800 flex flex-col text-white text-sm z-30">
           {NAV_LINKS.map((link) => (
             <li
@@ -224,8 +249,9 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
                 setActiveLink(link);
                 setShowMobileNav(false);
               }}
-              className={`px-6 py-3 border-b border-gray-800 ${activeLink === link ? "font-semibold text-white" : "text-gray-300"
-                }`}
+              className={`px-6 py-3 border-b border-gray-800 ${
+                activeLink === link ? "font-semibold text-white" : "text-gray-300"
+              }`}
             >
               {link}
             </li>
