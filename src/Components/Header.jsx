@@ -7,6 +7,8 @@ import { removeUser } from '../Utils/userSlice';
 import { toggleGptSearchView } from '../Utils/gptSlice';
 import { LOGO_URL, DEFAULT_PHOTO_URL, LANGUAGES, NAV_LINKS } from '../Utils/constants';
 import AvatarPicker from './AvatarPicker';
+import SearchOverlay from './SearchOverlay';
+import useGenres from '../hooks/useGenres';
 
 const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   const navigate = useNavigate();
@@ -15,11 +17,14 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   const user = useSelector((store) => store.user);
   const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
 
+  useGenres(); // cache genre lists once, ready before the user opens search
+
   const [showLangList, setShowLangList] = useState(false);
   const [selectedLang, setSelectedLang] = useState("English");
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
+  const [showSearchOverlay, setShowSearchOverlay] = useState(false);
 
   const profileRef = useRef(null);
 
@@ -167,7 +172,11 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
 
             {!showGptSearch && (
               <>
-                <button className="hover:opacity-80 transition" aria-label="Search">
+                <button
+                  onClick={() => setShowSearchOverlay(true)}
+                  className="hover:opacity-80 transition"
+                  aria-label="Search"
+                >
                   <svg width="18" height="18" className="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="11" cy="11" r="7" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -260,6 +269,10 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
 
       {showAvatarPicker && (
         <AvatarPicker onClose={() => setShowAvatarPicker(false)} />
+      )}
+
+      {showSearchOverlay && (
+        <SearchOverlay onClose={() => setShowSearchOverlay(false)} />
       )}
     </div>
   );

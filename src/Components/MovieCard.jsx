@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import useTitleLogo from '../hooks/useTitleLogo';
 
-const MovieCard = ({ posterUrl, title, id, mediaType = "movie" }) => {
+const MovieCard = ({ posterUrl, title, id, mediaType = "movie", layout = "row" }) => {
   const cardRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -24,11 +24,13 @@ const MovieCard = ({ posterUrl, title, id, mediaType = "movie" }) => {
 
   const logoUrl = useTitleLogo(id, mediaType, isVisible);
 
+  const wrapperClass =
+    layout === "grid"
+      ? "w-full cursor-pointer group/card"
+      : "w-40 sm:w-56 md:w-64 lg:w-80 flex-shrink-0 mr-2 md:mr-3 cursor-pointer group/card";
+
   return (
-    <div
-      ref={cardRef}
-      className="w-40 sm:w-56 md:w-64 lg:w-80 flex-shrink-0 mr-2 md:mr-3 cursor-pointer group/card"
-    >
+    <div ref={cardRef} className={wrapperClass}>
       <div className="relative aspect-video rounded-lg md:rounded-2xl overflow-hidden ring-1 ring-white/10 transition-transform duration-200 group-hover/card:scale-105 shadow-lg bg-gray-900">
         <img
           className="w-full h-full object-cover"

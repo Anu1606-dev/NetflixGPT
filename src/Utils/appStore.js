@@ -5,6 +5,7 @@ import trendingReducer from "./trendingSlice";
 import tvReducer from "./tvSlice";
 import gptReducer from "./gptSlice";
 import discoverReducer from "./discoverSlice";
+import searchReducer from "./searchSlice";
 
 const appStore = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ const appStore = configureStore({
     tv: tvReducer,
     gpt: gptReducer,
     discover: discoverReducer,
+    search: searchReducer,
   },
 });
 
