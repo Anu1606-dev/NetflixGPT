@@ -19,7 +19,7 @@ import { BACKDROP_CDN_URL } from '../Utils/constants';
 import GptSearchBar from './GptSearchBar';
 import useGptChat from '../hooks/useGptChat';
 import GptChatWindow from './GptChatWindow';
-import { resetConversation } from '../Utils/gptSlice';
+import { resetConversation, toggleGptSearchView } from '../Utils/gptSlice';
 
 const MIN_REVEAL_DELAY = 2500;
 const MAX_REVEAL_DELAY = 5000;
@@ -123,11 +123,23 @@ const Browse = () => {
         <div className="relative min-h-screen bg-gradient-to-b from-[#1a0000] via-black to-black">
           {/* Sticky chat header */}
           <div className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 pt-20 sm:pt-24 pb-3 bg-black/70 backdrop-blur-sm border-b border-white/10">
-            <div className="flex items-center gap-2 text-white">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-red-500">
-                <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
-              </svg>
-              <h1 className="text-sm sm:text-base font-semibold">AI Movie Assistant</h1>
+            <div className="flex items-center gap-3 text-white">
+              <button
+                onClick={() => dispatch(toggleGptSearchView())}
+                className="flex items-center gap-1.5 bg-white text-black text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full hover:bg-gray-200 transition"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                Back
+              </button>
+
+              <div className="hidden sm:flex items-center gap-2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-red-500">
+                  <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
+                </svg>
+                <h1 className="text-sm sm:text-base font-semibold">AI Movie Assistant</h1>
+              </div>
             </div>
 
             <button
@@ -165,9 +177,8 @@ const Browse = () => {
 
             {trailerVideo?.key && (
               <div
-                className={`absolute inset-0 overflow-hidden transition-opacity duration-700 ${
-                  showVideo ? "opacity-100" : "opacity-0"
-                }`}
+                className={`absolute inset-0 overflow-hidden transition-opacity duration-700 ${showVideo ? "opacity-100" : "opacity-0"
+                  }`}
               >
                 <div className="absolute top-1/2 left-1/2 w-[177.78vh] h-[56.25vw] min-w-full min-h-full -translate-x-1/2 -translate-y-1/2">
                   <YoutubeTrailerPlayer
