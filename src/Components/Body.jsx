@@ -7,6 +7,13 @@ import { addUser, removeUser } from '../Utils/userSlice';
 import Landing from './Landing';
 import Login from './Login';
 import Browse from './Browse';
+import Movies from './Movies';
+import Shows from './Shows';
+import NewAndPopular from './NewAndPopular';
+import MyList from './MyList';
+import Games from './Games';
+import BrowseByLanguages from './BrowseByLanguages';
+import ProtectedRoute from './ProtectedRoute';
 
 const Body = () => {
   const dispatch = useDispatch();
@@ -21,13 +28,19 @@ const Body = () => {
       }
     });
 
-    return () => unsubscribe(); // cleanup on unmount
-  }, [dispatch]); // Added dispatch to the dependency array to avoid warnings
+    return () => unsubscribe();
+  }, []);
 
   const appRouter = createBrowserRouter([
     { path: "/", element: <Landing /> },
     { path: "/login", element: <Login /> },
-    { path: "/browse", element: <Browse /> },
+    { path: "/browse", element: <ProtectedRoute><Browse /></ProtectedRoute> },
+    { path: "/movies", element: <ProtectedRoute><Movies /></ProtectedRoute> },
+    { path: "/shows", element: <ProtectedRoute><Shows /></ProtectedRoute> },
+    { path: "/new-and-popular", element: <ProtectedRoute><NewAndPopular /></ProtectedRoute> },
+    { path: "/my-list", element: <ProtectedRoute><MyList /></ProtectedRoute> },
+    { path: "/games", element: <ProtectedRoute><Games /></ProtectedRoute> },
+    { path: "/browse-by-languages", element: <ProtectedRoute><BrowseByLanguages /></ProtectedRoute> },
   ]);
 
   return (

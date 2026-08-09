@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { signOut } from 'firebase/auth';
 import { auth } from '../Utils/Firebase';
@@ -10,6 +10,7 @@ import AvatarPicker from './AvatarPicker';
 
 const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((store) => store.user);
   const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
@@ -17,7 +18,6 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   const [showLangList, setShowLangList] = useState(false);
   const [selectedLang, setSelectedLang] = useState("English");
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
-  const [activeLink, setActiveLink] = useState("Home");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
 
@@ -69,16 +69,17 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
         {showProfileIcon && !showGptSearch && (
           <ul className="hidden lg:flex items-center gap-2 text-sm text-gray-200">
             {NAV_LINKS.map((link) => (
-              <li
-                key={link}
-                onClick={() => setActiveLink(link)}
-                className={
-                  activeLink === link
-                    ? "bg-white text-black rounded-full px-4 py-1.5 font-semibold cursor-pointer"
-                    : "px-4 py-1.5 hover:text-white cursor-pointer"
-                }
-              >
-                {link}
+              <li key={link.path}>
+                <Link
+                  to={link.path}
+                  className={
+                    location.pathname === link.path
+                      ? "bg-white text-black rounded-full px-4 py-1.5 font-semibold block"
+                      : "px-4 py-1.5 hover:text-white block"
+                  }
+                >
+                  {link.label}
+                </Link>
               </li>
             ))}
           </ul>
@@ -138,7 +139,6 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
 
         {showProfileIcon && (
           <div className="flex items-center gap-3 sm:gap-4 md:gap-5 text-white">
-            {/* GPT search toggle — rounded-full pill matching Play/More Info buttons */}
             <button
               onClick={() => dispatch(toggleGptSearchView())}
               className="hidden sm:flex items-center gap-1.5 bg-white text-black text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full hover:bg-gray-200 transition"
@@ -243,17 +243,16 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
       {showMobileNav && showProfileIcon && !showGptSearch && (
         <ul className="lg:hidden absolute top-full left-0 w-full bg-black/95 border-t border-gray-800 flex flex-col text-white text-sm z-30">
           {NAV_LINKS.map((link) => (
-            <li
-              key={link}
-              onClick={() => {
-                setActiveLink(link);
-                setShowMobileNav(false);
-              }}
-              className={`px-6 py-3 border-b border-gray-800 ${
-                activeLink === link ? "font-semibold text-white" : "text-gray-300"
-              }`}
-            >
-              {link}
+            <li key={link.path}>
+              <Link
+                to={link.path}
+                onClick={() => setShowMobileNav(false)}
+                className={`block px-6 py-3 border-b border-gray-800 ${
+                  location.pathname === link.path ? "font-semibold text-white" : "text-gray-300"
+                }`}
+              >
+                {link.label}
+              </Link>
             </li>
           ))}
         </ul>
