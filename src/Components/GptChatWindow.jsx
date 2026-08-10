@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import MovieList from './MovieList';
+import MovieDetailCard from './MovieDetailCard';
 import { IMG_CDN_URL } from '../Utils/constants';
 
 const toCardData = (movies) =>
@@ -13,9 +14,9 @@ const toCardData = (movies) =>
 
 const SUGGESTIONS = [
   "Something like Inception but shorter",
+  "Tell me about Oppenheimer",
   "Feel-good movies for a rainy day",
-  "Underrated thrillers from the 2010s",
-  "Movies to watch with family tonight",
+  "What's The Dark Knight about?",
 ];
 
 const AiAvatar = () => (
@@ -42,7 +43,7 @@ const GptChatWindow = ({ streamingText, isStreaming, onSuggestionClick }) => {
           What are you in the mood for?
         </h2>
         <p className="text-gray-400 text-sm sm:text-base mb-6 max-w-md">
-          Describe a vibe, a mood, or something you already love — I'll find real movies to match.
+          Ask for recommendations, or ask about a specific movie or show.
         </p>
 
         <div className="flex flex-wrap justify-center gap-2 max-w-xl">
@@ -77,6 +78,13 @@ const GptChatWindow = ({ streamingText, isStreaming, onSuggestionClick }) => {
                 {turn.text}
               </div>
             </div>
+
+            {turn.movieDetail && (
+              <div className="flex justify-start pl-9 sm:pl-10">
+                <MovieDetailCard detail={turn.movieDetail} />
+              </div>
+            )}
+
             {turn.movies?.length > 0 && (
               <div className="-mx-4">
                 <MovieList movies={toCardData(turn.movies)} />

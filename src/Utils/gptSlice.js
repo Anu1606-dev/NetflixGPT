@@ -4,7 +4,7 @@ const gptSlice = createSlice({
   name: "gpt",
   initialState: {
     showGptSearch: false,
-    conversation: [], // [{ role: 'user'|'assistant', text, movies? }]
+    conversation: [], // [{ role, text, movies?, movieDetail? }]
   },
   reducers: {
     toggleGptSearchView: (state) => {
@@ -18,6 +18,7 @@ const gptSlice = createSlice({
         role: "assistant",
         text: action.payload.text,
         movies: action.payload.movies || [],
+        movieDetail: action.payload.movieDetail || null,
       });
     },
     resetConversation: (state) => {
