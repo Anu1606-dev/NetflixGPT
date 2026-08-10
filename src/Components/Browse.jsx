@@ -20,6 +20,7 @@ import GptSearchBar from './GptSearchBar';
 import useGptChat from '../hooks/useGptChat';
 import GptChatWindow from './GptChatWindow';
 import { resetConversation, toggleGptSearchView } from '../Utils/gptSlice';
+import Footer from './Footer';
 
 const MIN_REVEAL_DELAY = 2500;
 const MAX_REVEAL_DELAY = 5000;
@@ -259,6 +260,9 @@ const Browse = () => {
             <MovieList title="Popular TV Shows" movies={toCardData(popularTV, "tv")} />
             <MovieList title="Top Rated TV Shows" movies={toCardData(topRatedTV, "tv")} />
           </div>
+
+          <Footer />
+          
         </>
       )}
     </div>

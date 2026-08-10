@@ -14,6 +14,7 @@ import MyList from './MyList';
 import Games from './Games';
 import BrowseByLanguages from './BrowseByLanguages';
 import Notifications from './Notifications';
+import InfoPage from './InfoPage';
 import ProtectedRoute from './ProtectedRoute';
 
 const Body = () => {
@@ -43,6 +44,7 @@ const Body = () => {
     { path: "/games", element: <ProtectedRoute><Games /></ProtectedRoute> },
     { path: "/browse-by-languages", element: <ProtectedRoute><BrowseByLanguages /></ProtectedRoute> },
     { path: "/notifications", element: <ProtectedRoute><Notifications /></ProtectedRoute> },
+    { path: "/info/:slug", element: <InfoPage /> }, // public — no auth required
   ]);
 
   return (
