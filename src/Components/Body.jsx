@@ -13,6 +13,7 @@ import NewAndPopular from './NewAndPopular';
 import MyList from './MyList';
 import Games from './Games';
 import BrowseByLanguages from './BrowseByLanguages';
+import Notifications from './Notifications';
 import ProtectedRoute from './ProtectedRoute';
 
 const Body = () => {
@@ -41,6 +42,7 @@ const Body = () => {
     { path: "/my-list", element: <ProtectedRoute><MyList /></ProtectedRoute> },
     { path: "/games", element: <ProtectedRoute><Games /></ProtectedRoute> },
     { path: "/browse-by-languages", element: <ProtectedRoute><BrowseByLanguages /></ProtectedRoute> },
+    { path: "/notifications", element: <ProtectedRoute><Notifications /></ProtectedRoute> },
   ]);
 
   return (
