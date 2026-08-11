@@ -16,6 +16,7 @@ import BrowseByLanguages from './BrowseByLanguages';
 import Notifications from './Notifications';
 import InfoPage from './InfoPage';
 import ProtectedRoute from './ProtectedRoute';
+import useMyListSync from '../hooks/useMyListSync';
 
 const Body = () => {
   const dispatch = useDispatch();
@@ -29,9 +30,10 @@ const Body = () => {
         dispatch(removeUser());
       }
     });
-
     return () => unsubscribe();
   }, []);
+
+  useMyListSync(); // Initialize the myList sync
 
   const appRouter = createBrowserRouter([
     { path: "/", element: <Landing /> },
