@@ -6,10 +6,10 @@ import { auth } from '../Utils/Firebase';
 import { removeUser } from '../Utils/userSlice';
 import { toggleGptSearchView } from '../Utils/gptSlice';
 import { LOGO_URL, DEFAULT_PHOTO_URL, LANGUAGES, NAV_LINKS } from '../Utils/constants';
+import { DUMMY_NOTIFICATIONS } from '../Utils/notifications';
 import AvatarPicker from './AvatarPicker';
 import SearchOverlay from './SearchOverlay';
 import useGenres from '../hooks/useGenres';
-import { DUMMY_NOTIFICATIONS } from '../Utils/notifications';
 
 const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   const user = useSelector((store) => store.user);
   const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
 
-  useGenres(); // cache genre lists once, ready before the user opens search
+  useGenres();
 
   const [showLangList, setShowLangList] = useState(false);
   const [selectedLang, setSelectedLang] = useState("English");
@@ -28,6 +28,7 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
   const [showSearchOverlay, setShowSearchOverlay] = useState(false);
 
   const profileRef = useRef(null);
+  const unreadCount = DUMMY_NOTIFICATIONS.filter((n) => n.unread).length;
 
   useEffect(() => {
     const handleOutsideClick = (e) => {
@@ -108,7 +109,7 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
         )}
       </div>
 
-      <div className="flex items-center gap-3 sm:gap-4 md:gap-5">
+      <div className="flex items-center gap-2 sm:gap-4 md:gap-5">
         {showSignIn && (
           <>
             <div className="relative">
@@ -144,10 +145,11 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
         )}
 
         {showProfileIcon && (
-          <div className="flex items-center gap-3 sm:gap-4 md:gap-5 text-white">
+          <div className="flex items-center gap-2 sm:gap-4 md:gap-5 text-white">
+            {/* GPT toggle — now always visible, icon-only on the smallest screens */}
             <button
               onClick={() => dispatch(toggleGptSearchView())}
-              className="hidden sm:flex items-center gap-1.5 bg-white text-black text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full hover:bg-gray-200 transition"
+              className="flex items-center gap-1.5 bg-white text-black text-xs sm:text-sm font-semibold px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full hover:bg-gray-200 transition flex-shrink-0"
             >
               {showGptSearch ? (
                 <>
@@ -157,7 +159,7 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
                     <rect x="3" y="14" width="7" height="7" rx="1" />
                     <rect x="14" y="14" width="7" height="7" rx="1" />
                   </svg>
-                  Browse
+                  <span className="hidden sm:inline">Browse</span>
                 </>
               ) : (
                 <>
@@ -166,7 +168,7 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
                     <path d="M19 13l.75 2.25L22 16l-2.25.75L19 19l-.75-2.25L16 16l2.25-.75L19 13z" />
                     <path d="M5 13l.5 1.5L7 15l-1.5.5L5 17l-.5-1.5L3 15l1.5-.5L5 13z" />
                   </svg>
-                  Search by GPT
+                  <span className="hidden sm:inline">Search by GPT</span>
                 </>
               )}
             </button>
@@ -175,7 +177,7 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
               <>
                 <button
                   onClick={() => setShowSearchOverlay(true)}
-                  className="hover:opacity-80 transition"
+                  className="hover:opacity-80 transition flex-shrink-0"
                   aria-label="Search"
                 >
                   <svg width="18" height="18" className="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -184,21 +186,21 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
                   </svg>
                 </button>
 
-                <Link to="/notifications" className="relative cursor-pointer hover:opacity-80 transition">
+                <Link to="/notifications" className="relative cursor-pointer hover:opacity-80 transition flex-shrink-0">
                   <svg width="18" height="18" className="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
                     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                   </svg>
-                  {DUMMY_NOTIFICATIONS.filter((n) => n.unread).length > 0 && (
+                  {unreadCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-600 text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
-                      {DUMMY_NOTIFICATIONS.filter((n) => n.unread).length}
+                      {unreadCount}
                     </span>
                   )}
                 </Link>
               </>
             )}
 
-            <div ref={profileRef} className="relative group py-2 -my-2">
+            <div ref={profileRef} className="relative group py-2 -my-2 flex-shrink-0">
               <button
                 className="flex items-center gap-1"
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -224,8 +226,9 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
               <div className="absolute right-0 top-full w-40 sm:w-48 h-2"></div>
 
               <ul
-                className={`absolute right-0 top-full mt-2 w-40 sm:w-48 bg-black/95 border border-gray-700 rounded overflow-hidden text-sm transition-opacity duration-150 ${showProfileMenu ? "opacity-100 visible" : "opacity-0 invisible"
-                  } group-hover:opacity-100 group-hover:visible`}
+                className={`absolute right-0 top-full mt-2 w-40 sm:w-48 bg-black/95 border border-gray-700 rounded overflow-hidden text-sm transition-opacity duration-150 ${
+                  showProfileMenu ? "opacity-100 visible" : "opacity-0 invisible"
+                } group-hover:opacity-100 group-hover:visible`}
               >
                 {user?.displayName && (
                   <li className="px-3 py-2 text-gray-400 border-b border-gray-700 cursor-default truncate">
@@ -258,8 +261,9 @@ const Header = ({ showProfileIcon = false, showSignIn = false }) => {
               <Link
                 to={link.path}
                 onClick={() => setShowMobileNav(false)}
-                className={`block px-6 py-3 border-b border-gray-800 ${location.pathname === link.path ? "font-semibold text-white" : "text-gray-300"
-                  }`}
+                className={`block px-6 py-3 border-b border-gray-800 ${
+                  location.pathname === link.path ? "font-semibold text-white" : "text-gray-300"
+                }`}
               >
                 {link.label}
               </Link>
