@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useMovieSearch from '../hooks/useMovieSearch';
 import MovieCard from './MovieCard';
+import ImageSearchModal from './ImageSearchModal';
 
 const SearchOverlay = ({ onClose }) => {
   const [query, setQuery] = useState('');
+  const [showImageSearch, setShowImageSearch] = useState(false);
   const { search, results, isSearching, error, clearResults } = useMovieSearch();
   const inputRef = useRef(null);
 
@@ -11,16 +13,14 @@ const SearchOverlay = ({ onClose }) => {
     inputRef.current?.focus();
   }, []);
 
-  // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && !showImageSearch) onClose();
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [onClose, showImageSearch]);
 
-  // Debounce: search 500ms after the user stops typing
   useEffect(() => {
     if (!query.trim()) {
       clearResults();
@@ -56,6 +56,19 @@ const SearchOverlay = ({ onClose }) => {
         </form>
 
         <button
+          onClick={() => setShowImageSearch(true)}
+          aria-label="Search by image"
+          title="Identify a movie from a screenshot"
+          className="text-gray-400 hover:text-white transition flex-shrink-0"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <path d="M21 15l-5-5L5 21" />
+          </svg>
+        </button>
+
+        <button
           onClick={onClose}
           aria-label="Close search"
           className="text-gray-400 hover:text-white transition flex-shrink-0"
@@ -69,7 +82,7 @@ const SearchOverlay = ({ onClose }) => {
       <div className="px-4 sm:px-6 md:px-12 py-6">
         {!query.trim() && (
           <p className="text-gray-500 text-sm sm:text-base text-center mt-16">
-            Start typing to search movies and TV shows.
+            Start typing to search movies and TV shows, or use the image icon to identify one from a screenshot.
           </p>
         )}
 
@@ -100,6 +113,10 @@ const SearchOverlay = ({ onClose }) => {
           </div>
         )}
       </div>
+
+      {showImageSearch && (
+        <ImageSearchModal onClose={() => setShowImageSearch(false)} />
+      )}
     </div>
   );
 };
