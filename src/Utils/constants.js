@@ -11,6 +11,7 @@ export const BACKDROP_CDN_URL = "https://image.tmdb.org/t/p/w1280";
 export const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 
 const GEMINI_MODEL = "gemini-3.6-flash";
+export const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 export const GEMINI_STREAM_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse`;
 
 export const LOGO_URL =

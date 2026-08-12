@@ -26,8 +26,14 @@ export const removeFromMyList = async (uid, mediaType, id) => {
 export const subscribeToMyList = (uid, callback) => {
   const listRef = collection(db, "users", uid, "myList");
   return onSnapshot(listRef, (snapshot) => {
-    const items = snapshot.docs.map((d) => d.data());
-    items.sort((a, b) => (b.addedAt?.seconds || 0) - (a.addedAt?.seconds || 0));
+    const items = snapshot.docs.map((d) => {
+      const data = d.data();
+      return {
+        ...data,
+        addedAt: data.addedAt?.toMillis?.() || null, // convert Firestore Timestamp to a plain number
+      };
+    });
+    items.sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
     callback(items);
   });
 };

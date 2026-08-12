@@ -1,27 +1,17 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { API_OPTIONS, TMDB_BASE_URL, GEMINI_STREAM_URL } from "../Utils/constants";
+import { API_OPTIONS, TMDB_BASE_URL, GEMINI_URL, GEMINI_STREAM_URL } from "../Utils/constants";
+import { GEMINI_TOOLS } from "../Utils/geminiTools";
 import { addUserMessage, addAssistantMessage } from "../Utils/gptSlice";
 
 const SYSTEM_INSTRUCTION = {
   parts: [{
     text:
-      "You are a friendly movie and TV assistant inside a Netflix-style app. Reply conversationally " +
-      "in 1-2 short sentences, like a knowledgeable friend, not a robot. Then, on a new line, do exactly ONE of the following:\n\n" +
-      "1. If the user is asking about details of ONE specific movie or show by name (plot, cast, trailer, rating, when it came out, is it good, etc.), write exactly: DETAIL: <exact title>\n\n" +
-      "2. If the user wants recommendations, a list, or multiple movies (based on mood, genre, similarity, or a vague request), write exactly: MOVIES: followed by exactly 5 real movie names, comma separated.\n\n" +
-      "Never include both DETAIL: and MOVIES: in the same response. If the user is refining an earlier recommendation request (e.g. 'funnier', 'shorter'), stay in MOVIES mode using the prior conversation as context, unless they clearly pivot to asking about one specific title, in which case switch to DETAIL mode.",
+      "You are a friendly movie and TV assistant inside a Netflix-style app. Always reply in a warm, " +
+      "conversational tone, like a knowledgeable friend, not a robot. Use the functions available to you " +
+      "whenever the user is asking about movies or shows — don't just describe them in plain text. " +
+      "If the user is just chatting casually and not asking about movies, reply normally without calling a function.",
   }],
-};
-
-// Splits off the visible conversational text before either marker appears,
-// so streaming never shows the raw DETAIL:/MOVIES: instruction to the user.
-const getDisplayText = (text) => {
-  const detailIdx = text.indexOf("DETAIL:");
-  const moviesIdx = text.indexOf("MOVIES:");
-  const indices = [detailIdx, moviesIdx].filter((i) => i !== -1);
-  if (indices.length === 0) return text;
-  return text.slice(0, Math.min(...indices));
 };
 
 const useGptChat = () => {
@@ -39,7 +29,6 @@ const useGptChat = () => {
     return json.results?.[0] || null;
   };
 
-  // Finds the movie on TMDB, then fetches full details (videos + credits) for it
   const getMovieDetails = async (movieName) => {
     const match = await searchMovieTMDB(movieName);
     if (!match) return null;
@@ -73,12 +62,90 @@ const useGptChat = () => {
     };
   };
 
+  // Now returns the FULL original content object (role + parts), not just the first part —
+  // this preserves Gemini's thoughtSignature so it can be echoed back untouched later.
+  const decideAction = async (contents) => {
+    const response = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": process.env.REACT_APP_GEMINI_KEY,
+      },
+      body: JSON.stringify({
+        system_instruction: SYSTEM_INSTRUCTION,
+        contents,
+        tools: GEMINI_TOOLS,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("Gemini decideAction error:", response.status, errorBody);
+      throw new Error(`Gemini request failed (status ${response.status})`);
+    }
+
+    const json = await response.json();
+    const modelContent = json?.candidates?.[0]?.content;
+    const firstPart = modelContent?.parts?.[0];
+    return { modelContent, firstPart };
+  };
+
+  const streamFinalReply = async (contents) => {
+    const response = await fetch(GEMINI_STREAM_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": process.env.REACT_APP_GEMINI_KEY,
+      },
+      body: JSON.stringify({ system_instruction: SYSTEM_INSTRUCTION, contents }),
+    });
+
+    if (!response.ok || !response.body) {
+      const errorBody = await response.text();
+      console.error("Gemini streamFinalReply error:", response.status, errorBody);
+      throw new Error(`Gemini request failed (status ${response.status})`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = "";
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop();
+
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const jsonStr = line.slice(6).trim();
+        if (!jsonStr) continue;
+
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const delta = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (delta) {
+            fullText += delta;
+            setStreamingText(fullText);
+          }
+        } catch {
+          // incomplete chunk, safe to ignore
+        }
+      }
+    }
+
+    return fullText.trim();
+  };
+
   const sendMessage = async (userText) => {
     dispatch(addUserMessage(userText));
     setIsStreaming(true);
     setStreamingText("");
 
-    const contents = [
+    const baseContents = [
       ...conversation.map((turn) => ({
         role: turn.role === "user" ? "user" : "model",
         parts: [{ text: turn.text }],
@@ -87,70 +154,50 @@ const useGptChat = () => {
     ];
 
     try {
-      const response = await fetch(GEMINI_STREAM_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": process.env.REACT_APP_GEMINI_KEY,
-        },
-        body: JSON.stringify({ system_instruction: SYSTEM_INSTRUCTION, contents }),
-      });
+      const { modelContent, firstPart } = await decideAction(baseContents);
 
-      if (!response.ok || !response.body) {
-        throw new Error(`Gemini request failed (status ${response.status})`);
+      if (!firstPart?.functionCall) {
+        const plainText = firstPart?.text?.trim() || "I'm not sure how to help with that.";
+        dispatch(addAssistantMessage({ text: plainText, movies: [], movieDetail: null }));
+        return;
       }
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let fullText = "";
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop();
-
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (!jsonStr) continue;
-
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const delta = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (delta) {
-              fullText += delta;
-              setStreamingText(getDisplayText(fullText));
-            }
-          } catch {
-            // incomplete chunk, safe to ignore
-          }
-        }
-      }
-
-      let conversationalText = getDisplayText(fullText).trim();
+      const { name, args } = firstPart.functionCall;
       let movies = [];
       let movieDetail = null;
+      let functionResult;
 
-      if (fullText.includes("DETAIL:")) {
-        const movieName = fullText.split("DETAIL:")[1].trim();
-        movieDetail = await getMovieDetails(movieName);
-      } else if (fullText.includes("MOVIES:")) {
-        const moviesPart = fullText.split("MOVIES:")[1] || "";
-        const movieNames = moviesPart
-          .split(",")
-          .map((name) => name.trim())
-          .filter(Boolean)
-          .slice(0, 5);
-        movies = (await Promise.all(movieNames.map(searchMovieTMDB))).filter(Boolean);
+      if (name === "recommend_movies") {
+        const titles = (args.movie_titles || []).slice(0, 5);
+        movies = (await Promise.all(titles.map(searchMovieTMDB))).filter(Boolean);
+        functionResult = { success: movies.length > 0, count: movies.length };
+      } else if (name === "get_movie_details") {
+        movieDetail = await getMovieDetails(args.title);
+        functionResult = movieDetail
+          ? {
+              title: movieDetail.title,
+              overview: movieDetail.overview?.slice(0, 200),
+              releaseYear: movieDetail.releaseYear,
+              rating: movieDetail.rating,
+            }
+          : { success: false };
+      } else {
+        functionResult = { success: false, error: "Unknown function" };
       }
+
+      // Pass back Gemini's ORIGINAL content object (modelContent) instead of rebuilding it —
+      // this preserves the thoughtSignature field required by newer Gemini models.
+      const contentsWithFunctionResult = [
+        ...baseContents,
+        modelContent,
+        { role: "user", parts: [{ functionResponse: { name, response: functionResult } }] },
+      ];
+
+      const finalText = await streamFinalReply(contentsWithFunctionResult);
 
       dispatch(
         addAssistantMessage({
-          text: conversationalText || "Here's what I found:",
+          text: finalText || "Here's what I found:",
           movies,
           movieDetail,
         })
