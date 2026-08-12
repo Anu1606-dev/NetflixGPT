@@ -32,7 +32,7 @@ const Body = () => {
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [dispatch]);
 
   useMyListSync(); // Initialize the myList sync
   useContinueWatchingSync(); // Initialize the continueWatching sync
