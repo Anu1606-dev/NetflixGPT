@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import useTitleLogo from '../hooks/useTitleLogo';
 import { addToMyList, removeFromMyList, getItemId } from '../Utils/firestoreList';
 
-const MovieCard = ({ posterUrl, title, id, mediaType = "movie", layout = "row" }) => {
+const MovieCard = ({ posterUrl, title, id, mediaType = "movie", layout = "row", progress, onPlay }) => {
   const cardRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -51,6 +51,11 @@ const MovieCard = ({ posterUrl, title, id, mediaType = "movie", layout = "row" }
     }
   };
 
+  const handlePlayClick = (e) => {
+    e.stopPropagation();
+    onPlay?.();
+  };
+
   const wrapperClass =
     layout === "grid"
       ? "w-full cursor-pointer group/card"
@@ -89,6 +94,22 @@ const MovieCard = ({ posterUrl, title, id, mediaType = "movie", layout = "row" }
           </button>
         )}
 
+        {onPlay && (
+          // Wrapper has pointer-events-none so it doesn't block the My List button above it —
+          // only the circular play button itself (pointer-events-auto) is actually clickable.
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition pointer-events-none">
+            <button
+              onClick={handlePlayClick}
+              aria-label="Play"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow-lg pointer-events-auto"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="black">
+                <polygon points="6 3 20 12 6 21 6 3" />
+              </svg>
+            </button>
+          </div>
+        )}
+
         <div className="absolute inset-x-0 bottom-0 px-2 sm:px-3 md:px-4 pb-2 sm:pb-3 md:pb-4 flex items-end min-h-[2rem] sm:min-h-[2.5rem] md:min-h-[3rem]">
           {logoUrl ? (
             <img
@@ -104,6 +125,15 @@ const MovieCard = ({ posterUrl, title, id, mediaType = "movie", layout = "row" }
             )
           )}
         </div>
+
+        {typeof progress === "number" && (
+          <div className="absolute bottom-0 inset-x-0 h-1 bg-white/20">
+            <div
+              className="h-full bg-red-600"
+              style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+            ></div>
+          </div>
+        )}
       </div>
     </div>
   );

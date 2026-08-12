@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import MovieCard from './MovieCard';
 
-const MovieList = ({ title, movies }) => {
+const MovieList = ({ title, movies, onCardPlay }) => {
   const scrollRef = useRef(null);
 
   const scroll = (direction) => {
@@ -40,6 +40,8 @@ const MovieList = ({ title, movies }) => {
             mediaType={movie.mediaType}
             posterUrl={movie.image}
             title={movie.title}
+            progress={movie.progress}
+            onPlay={onCardPlay ? () => onCardPlay(movie) : undefined}
           />
         ))}
       </div>

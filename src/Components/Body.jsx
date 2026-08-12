@@ -17,6 +17,7 @@ import Notifications from './Notifications';
 import InfoPage from './InfoPage';
 import ProtectedRoute from './ProtectedRoute';
 import useMyListSync from '../hooks/useMyListSync';
+import useContinueWatchingSync from '../hooks/useContinueWatchingSync';
 
 const Body = () => {
   const dispatch = useDispatch();
@@ -34,6 +35,7 @@ const Body = () => {
   }, []);
 
   useMyListSync(); // Initialize the myList sync
+  useContinueWatchingSync(); // Initialize the continueWatching sync
 
   const appRouter = createBrowserRouter([
     { path: "/", element: <Landing /> },

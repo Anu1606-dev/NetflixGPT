@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Header from './Header';
 import MovieList from './MovieList';
+import Footer from './Footer';
 import YoutubeTrailerPlayer from './YoutubeTrailerPlayer';
+import MoviePlayerModal from './MoviePlayerModal';
 import useNowPlayingMovies from '../hooks/useNowPlayingMovies';
 import usePopularMovies from '../hooks/usePopularMovies';
 import useTopRatedMovies from '../hooks/useTopRatedMovies';
@@ -15,13 +17,12 @@ import useAiringTodayTV from '../hooks/useAiringTodayTV';
 import useOnTheAirTV from '../hooks/useOnTheAirTV';
 import usePopularTV from '../hooks/usePopularTV';
 import useTopRatedTV from '../hooks/useTopRatedTV';
-import { BACKDROP_CDN_URL } from '../Utils/constants';
-import GptSearchBar from './GptSearchBar';
 import useGptChat from '../hooks/useGptChat';
+import useChatImageSearch from '../hooks/useChatImageSearch';
+import GptSearchBar from './GptSearchBar';
 import GptChatWindow from './GptChatWindow';
 import { resetConversation, toggleGptSearchView } from '../Utils/gptSlice';
-import Footer from './Footer';
-import useChatImageSearch from '../hooks/useChatImageSearch';
+import { BACKDROP_CDN_URL } from '../Utils/constants';
 
 const MIN_REVEAL_DELAY = 2500;
 const MAX_REVEAL_DELAY = 5000;
@@ -30,6 +31,7 @@ const Browse = () => {
   const [isMuted, setIsMuted] = useState(true);
   const [mainMovie, setMainMovie] = useState(null);
   const [showVideo, setShowVideo] = useState(false);
+  const [playingItem, setPlayingItem] = useState(null);
 
   const playerConfirmedPlaying = useRef(false);
   const minTimeElapsed = useRef(false);
@@ -63,6 +65,7 @@ const Browse = () => {
   const onTheAir = useSelector((store) => store.tv.onTheAir);
   const popularTV = useSelector((store) => store.tv.popularTV);
   const topRatedTV = useSelector((store) => store.tv.topRatedTV);
+  const continueWatchingItems = useSelector((store) => store.continueWatching.items);
 
   useEffect(() => {
     if (nowPlayingMovies && nowPlayingMovies.length > 0) {
@@ -106,6 +109,21 @@ const Browse = () => {
     tryReveal();
   };
 
+  // Opens the watch modal for any card — resumes from saved progress if this title
+  // already exists in Continue Watching, otherwise starts from 0.
+  const handleCardPlay = (movie) => {
+    const itemId = `${movie.mediaType}_${movie.id}`;
+    const existing = continueWatchingItems.find((cw) => cw.itemId === itemId);
+
+    setPlayingItem({
+      id: movie.id,
+      mediaType: movie.mediaType,
+      title: movie.title,
+      image: movie.image,
+      resumeSeconds: existing?.progressSeconds || 0,
+    });
+  };
+
   if (!nowPlayingMovies || !mainMovie) return null;
 
   const toCardData = (items, defaultMediaType = "movie") =>
@@ -118,13 +136,20 @@ const Browse = () => {
         mediaType: item.media_type || defaultMediaType,
       })) || [];
 
+  const continueWatchingCardData = continueWatchingItems.map((item) => ({
+    id: item.id,
+    mediaType: item.mediaType,
+    title: item.title,
+    image: item.image,
+    progress: item.durationSeconds ? (item.progressSeconds / item.durationSeconds) * 100 : 0,
+  }));
+
   return (
     <div className="relative bg-black min-h-screen">
       <Header showProfileIcon={true} />
 
       {showGptSearch ? (
         <div className="relative min-h-screen bg-gradient-to-b from-[#1a0000] via-black to-black">
-          {/* Sticky chat header */}
           <div className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 pt-20 sm:pt-24 pb-3 bg-black/70 backdrop-blur-sm border-b border-white/10">
             <div className="flex items-center gap-3 text-white">
               <button
@@ -184,8 +209,9 @@ const Browse = () => {
 
             {trailerVideo?.key && (
               <div
-                className={`absolute inset-0 overflow-hidden transition-opacity duration-700 ${showVideo ? "opacity-100" : "opacity-0"
-                  }`}
+                className={`absolute inset-0 overflow-hidden transition-opacity duration-700 ${
+                  showVideo ? "opacity-100" : "opacity-0"
+                }`}
               >
                 <div className="absolute top-1/2 left-1/2 w-[177.78vh] h-[56.25vw] min-w-full min-h-full -translate-x-1/2 -translate-y-1/2">
                   <YoutubeTrailerPlayer
@@ -235,7 +261,17 @@ const Browse = () => {
               </p>
 
               <div className="flex gap-2 sm:gap-3">
-                <button className="bg-white text-black px-4 sm:px-6 py-2 sm:py-2.5 rounded-full flex items-center gap-2 font-semibold hover:bg-gray-200 transition text-sm sm:text-base">
+                <button
+                  onClick={() =>
+                    handleCardPlay({
+                      id: mainMovie.id,
+                      mediaType: "movie",
+                      title: mainMovie.title,
+                      image: BACKDROP_CDN_URL + mainMovie.backdrop_path,
+                    })
+                  }
+                  className="bg-white text-black px-4 sm:px-6 py-2 sm:py-2.5 rounded-full flex items-center gap-2 font-semibold hover:bg-gray-200 transition text-sm sm:text-base"
+                >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                     <polygon points="6 3 20 12 6 21 6 3" />
                   </svg>
@@ -254,22 +290,32 @@ const Browse = () => {
           </div>
 
           <div className="relative mt-4 z-10">
-            <MovieList title="Now Playing" movies={toCardData(nowPlayingMovies, "movie")} />
-            <MovieList title="Popular on Netflix" movies={toCardData(popularMovies, "movie")} />
-            <MovieList title="Top Rated" movies={toCardData(topRatedMovies, "movie")} />
-            <MovieList title="Upcoming" movies={toCardData(upcomingMovies, "movie")} />
-            <MovieList title="Trending Today" movies={toCardData(trendingAll)} />
-            <MovieList title="Trending Movies" movies={toCardData(trendingMovies, "movie")} />
-            <MovieList title="Trending TV Shows" movies={toCardData(trendingTV, "tv")} />
-            <MovieList title="Airing Today" movies={toCardData(airingToday, "tv")} />
-            <MovieList title="On The Air" movies={toCardData(onTheAir, "tv")} />
-            <MovieList title="Popular TV Shows" movies={toCardData(popularTV, "tv")} />
-            <MovieList title="Top Rated TV Shows" movies={toCardData(topRatedTV, "tv")} />
+            {continueWatchingCardData.length > 0 && (
+              <MovieList
+                title="Continue Watching"
+                movies={continueWatchingCardData}
+                onCardPlay={handleCardPlay}
+              />
+            )}
+            <MovieList title="Now Playing" movies={toCardData(nowPlayingMovies, "movie")} onCardPlay={handleCardPlay} />
+            <MovieList title="Popular on Netflix" movies={toCardData(popularMovies, "movie")} onCardPlay={handleCardPlay} />
+            <MovieList title="Top Rated" movies={toCardData(topRatedMovies, "movie")} onCardPlay={handleCardPlay} />
+            <MovieList title="Upcoming" movies={toCardData(upcomingMovies, "movie")} onCardPlay={handleCardPlay} />
+            <MovieList title="Trending Today" movies={toCardData(trendingAll)} onCardPlay={handleCardPlay} />
+            <MovieList title="Trending Movies" movies={toCardData(trendingMovies, "movie")} onCardPlay={handleCardPlay} />
+            <MovieList title="Trending TV Shows" movies={toCardData(trendingTV, "tv")} onCardPlay={handleCardPlay} />
+            <MovieList title="Airing Today" movies={toCardData(airingToday, "tv")} onCardPlay={handleCardPlay} />
+            <MovieList title="On The Air" movies={toCardData(onTheAir, "tv")} onCardPlay={handleCardPlay} />
+            <MovieList title="Popular TV Shows" movies={toCardData(popularTV, "tv")} onCardPlay={handleCardPlay} />
+            <MovieList title="Top Rated TV Shows" movies={toCardData(topRatedTV, "tv")} onCardPlay={handleCardPlay} />
           </div>
 
           <Footer />
-
         </>
+      )}
+
+      {playingItem && (
+        <MoviePlayerModal item={playingItem} onClose={() => setPlayingItem(null)} />
       )}
     </div>
   );

@@ -12,16 +12,23 @@ const loadYouTubeAPI = () => {
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.body.appendChild(tag);
-
     window.onYouTubeIframeAPIReady = () => resolve();
   });
 
   return apiLoadingPromise;
 };
 
-const YoutubeTrailerPlayer = ({ videoId, isMuted, onPlaying }) => {
+const YoutubeTrailerPlayer = ({
+  videoId,
+  isMuted = true,
+  controls = 0,       // 0 = background ambient trailer (hero banner), 1 = real player (watch modal)
+  startSeconds = 0,   // resume position, only relevant when controls = 1
+  onPlaying,
+  onProgress,          // (currentTime, duration) => void — polled every 5s while playing
+}) => {
   const containerRef = useRef(null);
   const playerRef = useRef(null);
+  const progressIntervalRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -35,21 +42,46 @@ const YoutubeTrailerPlayer = ({ videoId, isMuted, onPlaying }) => {
         height: '100%',
         playerVars: {
           autoplay: 1,
-          mute: 1,
-          controls: 0,
-          loop: 1,
-          playlist: videoId,
+          mute: isMuted ? 1 : 0,
+          controls,
+          loop: controls ? 0 : 1,
+          playlist: controls ? undefined : videoId,
           modestbranding: 1,
           showinfo: 0,
           rel: 0,
           iv_load_policy: 3,
-          disablekb: 1,
-          fs: 0,
+          start: Math.floor(startSeconds || 0),
         },
         events: {
+          onReady: () => {
+            if (startSeconds) {
+              playerRef.current.seekTo(startSeconds, true);
+            }
+          },
           onStateChange: (event) => {
             if (event.data === window.YT.PlayerState.PLAYING) {
               onPlaying?.();
+
+              if (onProgress && !progressIntervalRef.current) {
+                progressIntervalRef.current = setInterval(() => {
+                  const current = playerRef.current?.getCurrentTime?.() || 0;
+                  const duration = playerRef.current?.getDuration?.() || 0;
+                  onProgress(current, duration);
+                }, 5000);
+              }
+            } else if (
+              event.data === window.YT.PlayerState.PAUSED ||
+              event.data === window.YT.PlayerState.ENDED
+            ) {
+              if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
+                progressIntervalRef.current = null;
+              }
+              if (onProgress) {
+                const current = playerRef.current?.getCurrentTime?.() || 0;
+                const duration = playerRef.current?.getDuration?.() || 0;
+                onProgress(current, duration);
+              }
             }
           },
         },
@@ -58,6 +90,7 @@ const YoutubeTrailerPlayer = ({ videoId, isMuted, onPlaying }) => {
 
     return () => {
       isMounted = false;
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
       if (playerRef.current?.destroy) {
         playerRef.current.destroy();
       }
@@ -70,7 +103,12 @@ const YoutubeTrailerPlayer = ({ videoId, isMuted, onPlaying }) => {
     }
   }, [isMuted]);
 
-  return <div ref={containerRef} className="w-full h-full pointer-events-none" />;
+  return (
+    <div
+      ref={containerRef}
+      className={controls ? "w-full h-full" : "w-full h-full pointer-events-none"}
+    />
+  );
 };
 
 export default YoutubeTrailerPlayer;

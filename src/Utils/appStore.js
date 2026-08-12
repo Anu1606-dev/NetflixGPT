@@ -7,6 +7,7 @@ import gptReducer from "./gptSlice";
 import discoverReducer from "./discoverSlice";
 import searchReducer from "./searchSlice";
 import myListReducer from "./myListSlice";
+import continueWatchingReducer from "./continueWatchingSlice";
 
 const appStore = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ const appStore = configureStore({
     discover: discoverReducer,
     search: searchReducer,
     myList: myListReducer,
+    continueWatching: continueWatchingReducer,
   },
 });
 
