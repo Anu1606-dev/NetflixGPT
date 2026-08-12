@@ -43,7 +43,7 @@ const GptChatWindow = ({ streamingText, isStreaming, onSuggestionClick }) => {
           What are you in the mood for?
         </h2>
         <p className="text-gray-400 text-sm sm:text-base mb-6 max-w-md">
-          Ask for recommendations, or ask about a specific movie or show.
+          Ask for recommendations, ask about a specific movie, or upload a screenshot.
         </p>
 
         <div className="flex flex-wrap justify-center gap-2 max-w-xl">
@@ -65,10 +65,19 @@ const GptChatWindow = ({ streamingText, isStreaming, onSuggestionClick }) => {
     <div className="flex flex-col gap-6 pt-6">
       {conversation.map((turn, index) =>
         turn.role === "user" ? (
-          <div key={index} className="flex justify-end">
-            <div className="bg-red-600 text-white px-4 py-2.5 rounded-2xl rounded-br-sm max-w-[85%] sm:max-w-[70%] text-sm sm:text-base shadow-lg">
-              {turn.text}
-            </div>
+          <div key={index} className="flex flex-col items-end gap-2">
+            {turn.image && (
+              <img
+                src={turn.image}
+                alt="Uploaded screenshot"
+                className="max-w-[70%] sm:max-w-[50%] rounded-2xl shadow-lg"
+              />
+            )}
+            {turn.text && (
+              <div className="bg-red-600 text-white px-4 py-2.5 rounded-2xl rounded-br-sm max-w-[85%] sm:max-w-[70%] text-sm sm:text-base shadow-lg">
+                {turn.text}
+              </div>
+            )}
           </div>
         ) : (
           <div key={index} className="flex flex-col gap-3">

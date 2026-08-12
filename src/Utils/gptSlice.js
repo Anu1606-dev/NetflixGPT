@@ -4,14 +4,23 @@ const gptSlice = createSlice({
   name: "gpt",
   initialState: {
     showGptSearch: false,
-    conversation: [], // [{ role, text, movies?, movieDetail? }]
+    conversation: [],
   },
   reducers: {
     toggleGptSearchView: (state) => {
       state.showGptSearch = !state.showGptSearch;
     },
     addUserMessage: (state, action) => {
-      state.conversation.push({ role: "user", text: action.payload });
+      const payload = action.payload;
+      if (typeof payload === "string") {
+        state.conversation.push({ role: "user", text: payload, image: null });
+      } else {
+        state.conversation.push({
+          role: "user",
+          text: payload.text || "",
+          image: payload.image || null,
+        });
+      }
     },
     addAssistantMessage: (state, action) => {
       state.conversation.push({
@@ -35,3 +44,4 @@ export const {
 } = gptSlice.actions;
 
 export default gptSlice.reducer;
+

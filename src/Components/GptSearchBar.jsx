@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import useVoiceSearch from '../hooks/useVoiceSearch';
 
-const GptSearchBar = ({ onSearch, isSearching }) => {
+const GptSearchBar = ({ onSearch, onImageUpload, isSearching }) => {
   const [query, setQuery] = useState('');
+  const fileInputRef = useRef(null);
 
   const {
     isSupported,
@@ -15,14 +16,12 @@ const GptSearchBar = ({ onSearch, isSearching }) => {
     clearFinalTranscript,
   } = useVoiceSearch();
 
-  // Show live speech-to-text in the input as the user talks
   useEffect(() => {
     if (isListening) {
       setQuery(transcript);
     }
   }, [transcript, isListening]);
 
-  // Once the browser confirms a final transcript, auto-send it — no extra click needed
   useEffect(() => {
     if (finalTranscript.trim()) {
       onSearch(finalTranscript.trim());
@@ -49,6 +48,14 @@ const GptSearchBar = ({ onSearch, isSearching }) => {
     }
   };
 
+  const handleImageFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onImageUpload?.(file);
+    }
+    e.target.value = ''; // allow uploading the same file again later
+  };
+
   return (
     <div className="w-full max-w-3xl mx-auto">
       <form
@@ -69,6 +76,28 @@ const GptSearchBar = ({ onSearch, isSearching }) => {
           disabled={isSearching}
           className="flex-1 px-4 py-2 rounded-full bg-transparent text-white text-sm sm:text-base outline-none disabled:opacity-50"
         />
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageFileChange}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isSearching}
+          aria-label="Identify from image"
+          title="Upload a screenshot to identify"
+          className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 hover:bg-white/20 flex-shrink-0 transition disabled:opacity-50"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <path d="M21 15l-5-5L5 21" />
+          </svg>
+        </button>
 
         {isSupported && (
           <button

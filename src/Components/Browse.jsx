@@ -21,6 +21,7 @@ import useGptChat from '../hooks/useGptChat';
 import GptChatWindow from './GptChatWindow';
 import { resetConversation, toggleGptSearchView } from '../Utils/gptSlice';
 import Footer from './Footer';
+import useChatImageSearch from '../hooks/useChatImageSearch';
 
 const MIN_REVEAL_DELAY = 2500;
 const MAX_REVEAL_DELAY = 5000;
@@ -36,6 +37,7 @@ const Browse = () => {
   const dispatch = useDispatch();
   const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
   const { sendMessage, isStreaming, streamingText } = useGptChat();
+  const { sendImage, isProcessing: isImageProcessing } = useChatImageSearch();
 
   useNowPlayingMovies();
   usePopularMovies();
@@ -164,7 +166,11 @@ const Browse = () => {
           </div>
 
           <div className="fixed bottom-0 inset-x-0 bg-gradient-to-t from-black via-black/95 to-transparent pt-10 pb-4 sm:pb-6 px-4 z-30">
-            <GptSearchBar onSearch={sendMessage} isSearching={isStreaming} />
+            <GptSearchBar
+              onSearch={sendMessage}
+              onImageUpload={sendImage}
+              isSearching={isStreaming || isImageProcessing}
+            />
           </div>
         </div>
       ) : (
@@ -262,7 +268,7 @@ const Browse = () => {
           </div>
 
           <Footer />
-          
+
         </>
       )}
     </div>
