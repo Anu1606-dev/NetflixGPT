@@ -14,6 +14,11 @@ const GEMINI_MODEL = "gemini-3.6-flash";
 export const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 export const GEMINI_STREAM_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse`;
 
+// Lighter, faster model — used specifically for single-shot image identification,
+// which is a simple classification task that doesn't need the full reasoning model.
+const GEMINI_LITE_MODEL = "gemini-3.5-flash-lite";
+export const GEMINI_LITE_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_LITE_MODEL}:generateContent`;
+
 export const LOGO_URL =
   "https://occ.a.nflxso.net/dnmt/api/v6/iL4oJVDYZ8KLSrJ6eG2OwtghbfQ/AAAAAVvRDRqBcLS7fk0Qpns6gQSS3VdMMYtpN_ba4Nzu63yuVrE7JHt-MdKCNAQnJ8SrsPBqivurwF6ugwnAa54jBGNohFD6CNLHDjwQUnPO_cKrHSqgmLOAw0zUe2dRClJd4cchXguY1Bjj.svg";
 
@@ -32,7 +37,6 @@ export const AVATARS = [
 
 export const LANGUAGES = ["English", "हिन्दी"];
 
-// Each nav link now maps to a real route
 export const NAV_LINKS = [
   { label: "Home", path: "/browse" },
   { label: "Shows", path: "/shows" },

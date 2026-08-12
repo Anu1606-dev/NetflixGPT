@@ -5,7 +5,7 @@ import MovieDetailCard from './MovieDetailCard';
 const ImageSearchModal = ({ onClose }) => {
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
-  const { identifyImage, preview, isSearching, result, error, reset } = useImageSearch();
+  const { identifyImage, preview, isSearching, status, result, error, reset } = useImageSearch();
 
   const handleFile = (file) => {
     if (!file || !file.type.startsWith('image/')) return;
@@ -80,7 +80,7 @@ const ImageSearchModal = ({ onClose }) => {
                     <span className="w-2.5 h-2.5 bg-white rounded-full animate-bounce [animation-delay:0.15s]"></span>
                     <span className="w-2.5 h-2.5 bg-white rounded-full animate-bounce [animation-delay:0.3s]"></span>
                   </span>
-                  <p className="text-white text-sm">Analyzing image...</p>
+                  <p className="text-white text-sm">{status || "Working..."}</p>
                 </div>
               )}
             </div>
