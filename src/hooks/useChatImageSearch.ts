@@ -1,15 +1,20 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useAppDispatch } from "./reduxHooks";
 import { resizeImage } from "../Utils/imageProcessing";
 import { identifyTitleFromImage } from "../Utils/geminiVision";
 import { searchTMDBMulti, getMediaDetails } from "../Utils/tmdbLookup";
 import { addUserMessage, addAssistantMessage } from "../Utils/gptSlice";
 
-const useChatImageSearch = () => {
-  const dispatch = useDispatch();
+interface UseChatImageSearchReturn {
+  sendImage: (file: File) => Promise<void>;
+  isProcessing: boolean;
+}
+
+const useChatImageSearch = (): UseChatImageSearchReturn => {
+  const dispatch = useAppDispatch();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const sendImage = async (file) => {
+  const sendImage = async (file: File): Promise<void> => {
     if (!file || isProcessing) return;
     setIsProcessing(true);
 
@@ -69,3 +74,4 @@ const useChatImageSearch = () => {
 };
 
 export default useChatImageSearch;
+

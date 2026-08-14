@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "./reduxHooks";
 import { API_OPTIONS, TMDB_BASE_URL, GEMINI_URL, GEMINI_STREAM_URL } from "../Utils/constants";
 import { GEMINI_TOOLS } from "../Utils/geminiTools";
 import { addUserMessage, addAssistantMessage } from "../Utils/gptSlice";
+import { MovieDetail } from "../Utils/types";
 
 const SYSTEM_INSTRUCTION = {
   parts: [{
@@ -14,13 +15,19 @@ const SYSTEM_INSTRUCTION = {
   }],
 };
 
-const useGptChat = () => {
-  const dispatch = useDispatch();
-  const conversation = useSelector((store) => store.gpt.conversation);
+interface UseGptChatReturn {
+  sendMessage: (userText: string) => Promise<void>;
+  isStreaming: boolean;
+  streamingText: string;
+}
+
+const useGptChat = (): UseGptChatReturn => {
+  const dispatch = useAppDispatch();
+  const conversation = useAppSelector((store) => store.gpt.conversation);
   const [streamingText, setStreamingText] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
 
-  const searchMovieTMDB = async (movieName) => {
+  const searchMovieTMDB = async (movieName: string): Promise<any> => {
     const data = await fetch(
       `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(movieName)}&page=1`,
       API_OPTIONS
@@ -29,7 +36,7 @@ const useGptChat = () => {
     return json.results?.[0] || null;
   };
 
-  const getMovieDetails = async (movieName) => {
+  const getMovieDetails = async (movieName: string): Promise<MovieDetail | null> => {
     const match = await searchMovieTMDB(movieName);
     if (!match) return null;
 
@@ -40,7 +47,7 @@ const useGptChat = () => {
     const details = await data.json();
 
     const trailer =
-      details.videos?.results?.find((v) => v.type === "Trailer" && v.site === "YouTube") ||
+      details.videos?.results?.find((v: any) => v.type === "Trailer" && v.site === "YouTube") ||
       details.videos?.results?.[0] ||
       null;
 
@@ -52,24 +59,22 @@ const useGptChat = () => {
       backdropPath: details.backdrop_path,
       releaseYear: details.release_date?.slice(0, 4) || null,
       runtime: details.runtime || 0,
-      genres: details.genres?.map((g) => g.name) || [],
+      genres: details.genres?.map((g: any) => g.name) || [],
       rating: details.vote_average || 0,
       trailerKey: trailer?.key || null,
-      cast: (details.credits?.cast || []).slice(0, 5).map((c) => ({
+      cast: (details.credits?.cast || []).slice(0, 5).map((c: any) => ({
         name: c.name,
         character: c.character,
       })),
     };
   };
 
-  // Now returns the FULL original content object (role + parts), not just the first part —
-  // this preserves Gemini's thoughtSignature so it can be echoed back untouched later.
-  const decideAction = async (contents) => {
+  const decideAction = async (contents: any[]): Promise<{ modelContent: any; firstPart: any }> => {
     const response = await fetch(GEMINI_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-goog-api-key": process.env.REACT_APP_GEMINI_KEY,
+        "x-goog-api-key": process.env.REACT_APP_GEMINI_KEY as string,
       },
       body: JSON.stringify({
         system_instruction: SYSTEM_INSTRUCTION,
@@ -90,12 +95,12 @@ const useGptChat = () => {
     return { modelContent, firstPart };
   };
 
-  const streamFinalReply = async (contents) => {
+  const streamFinalReply = async (contents: any[]): Promise<string> => {
     const response = await fetch(GEMINI_STREAM_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-goog-api-key": process.env.REACT_APP_GEMINI_KEY,
+        "x-goog-api-key": process.env.REACT_APP_GEMINI_KEY as string,
       },
       body: JSON.stringify({ system_instruction: SYSTEM_INSTRUCTION, contents }),
     });
@@ -117,7 +122,7 @@ const useGptChat = () => {
 
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split("\n");
-      buffer = lines.pop();
+      buffer = lines.pop() || "";
 
       for (const line of lines) {
         if (!line.startsWith("data: ")) continue;
@@ -140,7 +145,7 @@ const useGptChat = () => {
     return fullText.trim();
   };
 
-  const sendMessage = async (userText) => {
+  const sendMessage = async (userText: string): Promise<void> => {
     dispatch(addUserMessage(userText));
     setIsStreaming(true);
     setStreamingText("");
@@ -163,13 +168,13 @@ const useGptChat = () => {
       }
 
       const { name, args } = firstPart.functionCall;
-      let movies = [];
-      let movieDetail = null;
-      let functionResult;
+      let movies: any[] = [];
+      let movieDetail: MovieDetail | null = null;
+      let functionResult: any;
 
       if (name === "recommend_movies") {
         const titles = (args.movie_titles || []).slice(0, 5);
-        movies = (await Promise.all(titles.map(searchMovieTMDB))).filter(Boolean);
+        movies = (await Promise.all(titles.map((t: string) => searchMovieTMDB(t)))).filter(Boolean);
         functionResult = { success: movies.length > 0, count: movies.length };
       } else if (name === "get_movie_details") {
         movieDetail = await getMovieDetails(args.title);
@@ -185,8 +190,6 @@ const useGptChat = () => {
         functionResult = { success: false, error: "Unknown function" };
       }
 
-      // Pass back Gemini's ORIGINAL content object (modelContent) instead of rebuilding it —
-      // this preserves the thoughtSignature field required by newer Gemini models.
       const contentsWithFunctionResult = [
         ...baseContents,
         modelContent,

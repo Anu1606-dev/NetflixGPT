@@ -1,23 +1,31 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
-const getSpeechRecognitionAPI = () =>
+const getSpeechRecognitionAPI = (): any =>
   typeof window !== 'undefined'
-    ? window.SpeechRecognition || window.webkitSpeechRecognition
+    ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     : null;
 
-// Wraps the browser's native Web Speech API.
-// Exposes a live `transcript` (updates as you speak) and a `finalTranscript`
-// (only set once, when the browser is confident it heard the full sentence).
-const useVoiceSearch = () => {
+interface UseVoiceSearchReturn {
+  isSupported: boolean;
+  isListening: boolean;
+  transcript: string;
+  finalTranscript: string;
+  error: string | null;
+  startListening: () => void;
+  stopListening: () => void;
+  clearFinalTranscript: () => void;
+}
+
+const useVoiceSearch = (): UseVoiceSearchReturn => {
   const SpeechRecognitionAPI = getSpeechRecognitionAPI();
   const isSupported = !!SpeechRecognitionAPI;
 
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [finalTranscript, setFinalTranscript] = useState('');
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const recognitionRef = useRef(null);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     if (!isSupported) return;
@@ -27,7 +35,7 @@ const useVoiceSearch = () => {
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
-    recognition.onresult = (event) => {
+    recognition.onresult = (event: any) => {
       let interim = '';
       let final = '';
 
@@ -48,7 +56,7 @@ const useVoiceSearch = () => {
       }
     };
 
-    recognition.onerror = (event) => {
+    recognition.onerror = (event: any) => {
       if (event.error === 'no-speech') {
         setError("Didn't catch that — try again.");
       } else if (event.error === 'not-allowed' || event.error === 'permission-denied') {
@@ -71,7 +79,7 @@ const useVoiceSearch = () => {
       recognition.onend = null;
       recognition.stop();
     };
-  }, [isSupported]);
+  }, [isSupported, SpeechRecognitionAPI]);
 
   const startListening = useCallback(() => {
     if (!recognitionRef.current || isListening) return;

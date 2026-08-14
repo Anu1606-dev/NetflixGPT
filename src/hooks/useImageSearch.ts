@@ -2,17 +2,27 @@ import { useState, useRef } from "react";
 import { resizeImage } from "../Utils/imageProcessing";
 import { identifyTitleFromImage } from "../Utils/geminiVision";
 import { searchTMDBMulti, getMediaDetails } from "../Utils/tmdbLookup";
+import { MovieDetail } from "../Utils/types";
 
-const useImageSearch = () => {
-  const [preview, setPreview] = useState(null);
+interface UseImageSearchReturn {
+  identifyImage: (file: File) => Promise<void>;
+  preview: string | null;
+  isSearching: boolean;
+  status: string;
+  result: MovieDetail | null;
+  error: string | null;
+  reset: () => void;
+}
+
+const useImageSearch = (): UseImageSearchReturn => {
+  const [preview, setPreview] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [status, setStatus] = useState("");
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-  const abortRef = useRef(null);
+  const [result, setResult] = useState<MovieDetail | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const identifyImage = async (file) => {
-    // Cancel any still-in-flight request from a previous upload
+  const identifyImage = async (file: File): Promise<void> => {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -24,7 +34,7 @@ const useImageSearch = () => {
     try {
       setStatus("Optimizing image...");
       const { base64, dataUrl, mimeType } = await resizeImage(file);
-      setPreview(dataUrl); // smaller resized preview, not the original multi-MB file
+      setPreview(dataUrl);
 
       setStatus("Identifying with AI...");
       const guess = await identifyTitleFromImage({ base64, mimeType }, controller.signal);
@@ -43,8 +53,8 @@ const useImageSearch = () => {
 
       const details = await getMediaDetails(match, controller.signal);
       setResult(details);
-    } catch (err) {
-      if (err.name === "AbortError") return; // superseded by a newer upload, ignore silently
+    } catch (err: any) {
+      if (err.name === "AbortError") return;
       console.error("Image search failed:", err);
       setError(err.message || "Something went wrong. Please try again.");
     } finally {
@@ -53,7 +63,7 @@ const useImageSearch = () => {
     }
   };
 
-  const reset = () => {
+  const reset = (): void => {
     abortRef.current?.abort();
     setPreview(null);
     setResult(null);
@@ -66,3 +76,4 @@ const useImageSearch = () => {
 };
 
 export default useImageSearch;
+
