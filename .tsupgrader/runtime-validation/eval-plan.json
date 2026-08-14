@@ -1,0 +1,28 @@
+{
+  "name": "NetflixGPT-runtime-validation",
+  "description": "Baseline runtime validation for the TypeScript upgrade workflow",
+  "projectType": "webapp",
+  "assertions": [
+    {
+      "type": "build",
+      "name": "npm run build succeeds",
+      "command": "npm run build",
+      "cwd": ".",
+      "expected": "0"
+    }
+  ],
+  "steps": [
+    {
+      "name": "npm install",
+      "command": "npm install",
+      "cwd": ".",
+      "expectedExitCode": 0
+    },
+    {
+      "name": "npm run build",
+      "command": "npm run build",
+      "cwd": ".",
+      "expectedExitCode": 0
+    }
+  ]
+}
