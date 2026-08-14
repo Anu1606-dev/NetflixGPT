@@ -1,0 +1,26 @@
+{
+  "planHash": "9a1b2560cd70de52b435ab0d3182cd196ac689fc2b9fd74c99ec6c12f8422591",
+  "phase": "postupgrade",
+  "recordedAtUtc": "2026-08-14T10:26:25.1303151Z",
+  "retryCount": 0,
+  "resetBaseline": false,
+  "result": {
+    "setupSucceeded": true,
+    "setupDurationMs": 0,
+    "setupFailureOutput": null,
+    "assertions": [
+      {
+        "name": "npm run build succeeds",
+        "kind": "process",
+        "verificationMethod": "exit-code",
+        "passed": false,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": null,
+        "outputSample": "\u003Cspawn error: An error occurred trying to start process \u0027npm run build\u0027 with working directory \u0027E:/NetflixGPT\u0027. The system cannot find the file specified.\u003E\n",
+        "durationMs": 103
+      }
+    ]
+  }
+}
