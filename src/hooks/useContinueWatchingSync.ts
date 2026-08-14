@@ -1,11 +1,11 @@
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "./reduxHooks";
 import { subscribeToContinueWatching } from "../Utils/firestoreProgress";
 import { setContinueWatching, clearContinueWatching } from "../Utils/continueWatchingSlice";
 
-const useContinueWatchingSync = () => {
-  const dispatch = useDispatch();
-  const user = useSelector((store) => store.user);
+const useContinueWatchingSync = (): void => {
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((store) => store.user);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -13,12 +13,12 @@ const useContinueWatchingSync = () => {
       return;
     }
 
-    const unsubscribe = subscribeToContinueWatching(user.uid, (items) => {
+    const unsubscribe = subscribeToContinueWatching(user.uid, (items: any) => {
       dispatch(setContinueWatching(items));
     });
 
     return () => unsubscribe();
-  }, [user?.uid]);
+  }, [user?.uid, dispatch]);
 };
 
 export default useContinueWatchingSync;

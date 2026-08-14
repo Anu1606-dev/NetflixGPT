@@ -1,11 +1,11 @@
-import { useDispatch } from "react-redux";
+import { useAppDispatch } from "./reduxHooks";
 import { API_OPTIONS } from "../Utils/constants";
 import { addMovieDetails } from "../Utils/moviesSlice";
 
-const useMovieDetails = () => {
-  const dispatch = useDispatch();
+const useMovieDetails = (): ((movieId: number) => Promise<void>) => {
+  const dispatch = useAppDispatch();
 
-  const fetchMovieDetails = async (movieId) => {
+  const fetchMovieDetails = async (movieId: number): Promise<void> => {
     const data = await fetch(
       `https://api.themoviedb.org/3/movie/${movieId}?append_to_response=videos,credits`,
       API_OPTIONS
@@ -14,7 +14,8 @@ const useMovieDetails = () => {
     dispatch(addMovieDetails(json));
   };
 
-  return fetchMovieDetails; // returns a function you call manually with a movie id
+  return fetchMovieDetails;
 };
 
 export default useMovieDetails;
+
