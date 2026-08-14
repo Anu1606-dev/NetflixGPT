@@ -1,17 +1,16 @@
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "./reduxHooks";
 import { API_OPTIONS, TMDB_BASE_URL } from "../Utils/constants";
 import { setGenres } from "../Utils/searchSlice";
 
-// Fetches TMDB's official genre lists once and caches them in Redux.
-const useGenres = () => {
-  const dispatch = useDispatch();
-  const genres = useSelector((store) => store.search.genres);
+const useGenres = (): void => {
+  const dispatch = useAppDispatch();
+  const genres = useAppSelector((store) => store.search.genres);
 
   useEffect(() => {
-    if (genres.movie && genres.tv) return; // already cached, skip refetching
+    if (genres.movie && genres.tv) return;
 
-    const getGenres = async () => {
+    const getGenres = async (): Promise<void> => {
       try {
         const [movieRes, tvRes] = await Promise.all([
           fetch(`${TMDB_BASE_URL}/genre/movie/list`, API_OPTIONS).then((r) => r.json()),
@@ -23,7 +22,7 @@ const useGenres = () => {
       }
     };
     getGenres();
-  }, []);
+  }, [dispatch, genres.movie, genres.tv]);
 };
 
 export default useGenres;
