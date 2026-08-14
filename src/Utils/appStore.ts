@@ -23,4 +23,10 @@ const appStore = configureStore({
   },
 });
 
+// These two types are the payoff of this whole migration — every component
+// using the typed hooks below now gets autocomplete and type-checking on
+// the entire Redux store shape.
+export type RootState = ReturnType<typeof appStore.getState>;
+export type AppDispatch = typeof appStore.dispatch;
+
 export default appStore;
