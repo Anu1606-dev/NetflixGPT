@@ -43,7 +43,7 @@ const Body = () => {
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [dispatch]);
 
   const appRouter = createBrowserRouter([
     { path: "/", element: withSuspense(Landing) },
