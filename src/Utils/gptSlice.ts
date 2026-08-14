@@ -1,16 +1,35 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { ConversationTurn, TMDBMedia, MovieDetail } from "./types";
+
+interface GptState {
+  showGptSearch: boolean;
+  conversation: ConversationTurn[];
+}
+
+const initialState: GptState = {
+  showGptSearch: false,
+  conversation: [],
+};
+
+interface AddUserMessagePayload {
+  text?: string;
+  image?: string | null;
+}
+
+interface AddAssistantMessagePayload {
+  text: string;
+  movies?: TMDBMedia[];
+  movieDetail?: MovieDetail | null;
+}
 
 const gptSlice = createSlice({
   name: "gpt",
-  initialState: {
-    showGptSearch: false,
-    conversation: [],
-  },
+  initialState,
   reducers: {
     toggleGptSearchView: (state) => {
       state.showGptSearch = !state.showGptSearch;
     },
-    addUserMessage: (state, action) => {
+    addUserMessage: (state, action: PayloadAction<string | AddUserMessagePayload>) => {
       const payload = action.payload;
       if (typeof payload === "string") {
         state.conversation.push({ role: "user", text: payload, image: null });
@@ -22,7 +41,7 @@ const gptSlice = createSlice({
         });
       }
     },
-    addAssistantMessage: (state, action) => {
+    addAssistantMessage: (state, action: PayloadAction<AddAssistantMessagePayload>) => {
       state.conversation.push({
         role: "assistant",
         text: action.payload.text,
@@ -44,4 +63,3 @@ export const {
 } = gptSlice.actions;
 
 export default gptSlice.reducer;
-
