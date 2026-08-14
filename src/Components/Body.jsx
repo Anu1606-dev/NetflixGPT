@@ -1,26 +1,37 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { useDispatch } from 'react-redux';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../Utils/Firebase';
 import { addUser, removeUser } from '../Utils/userSlice';
-import Landing from './Landing';
-import Login from './Login';
-import Browse from './Browse';
-import Movies from './Movies';
-import Shows from './Shows';
-import NewAndPopular from './NewAndPopular';
-import MyList from './MyList';
-import Games from './Games';
-import BrowseByLanguages from './BrowseByLanguages';
-import Notifications from './Notifications';
-import InfoPage from './InfoPage';
-import ProtectedRoute from './ProtectedRoute';
 import useMyListSync from '../hooks/useMyListSync';
 import useContinueWatchingSync from '../hooks/useContinueWatchingSync';
+import ProtectedRoute from './ProtectedRoute';
+import LoadingScreen from './LoadingScreen';
+
+// Each page now becomes its own separate JS chunk, downloaded only when visited
+const Landing = lazy(() => import('./Landing'));
+const Login = lazy(() => import('./Login'));
+const Browse = lazy(() => import('./Browse'));
+const Movies = lazy(() => import('./Movies'));
+const Shows = lazy(() => import('./Shows'));
+const NewAndPopular = lazy(() => import('./NewAndPopular'));
+const MyList = lazy(() => import('./MyList'));
+const Games = lazy(() => import('./Games'));
+const BrowseByLanguages = lazy(() => import('./BrowseByLanguages'));
+const Notifications = lazy(() => import('./Notifications'));
+const InfoPage = lazy(() => import('./InfoPage'));
+
+const withSuspense = (Component) => (
+  <Suspense fallback={<LoadingScreen />}>
+    <Component />
+  </Suspense>
+);
 
 const Body = () => {
   const dispatch = useDispatch();
+  useMyListSync();
+  useContinueWatchingSync();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -32,23 +43,20 @@ const Body = () => {
       }
     });
     return () => unsubscribe();
-  }, [dispatch]);
-
-  useMyListSync(); // Initialize the myList sync
-  useContinueWatchingSync(); // Initialize the continueWatching sync
+  }, []);
 
   const appRouter = createBrowserRouter([
-    { path: "/", element: <Landing /> },
-    { path: "/login", element: <Login /> },
-    { path: "/browse", element: <ProtectedRoute><Browse /></ProtectedRoute> },
-    { path: "/movies", element: <ProtectedRoute><Movies /></ProtectedRoute> },
-    { path: "/shows", element: <ProtectedRoute><Shows /></ProtectedRoute> },
-    { path: "/new-and-popular", element: <ProtectedRoute><NewAndPopular /></ProtectedRoute> },
-    { path: "/my-list", element: <ProtectedRoute><MyList /></ProtectedRoute> },
-    { path: "/games", element: <ProtectedRoute><Games /></ProtectedRoute> },
-    { path: "/browse-by-languages", element: <ProtectedRoute><BrowseByLanguages /></ProtectedRoute> },
-    { path: "/notifications", element: <ProtectedRoute><Notifications /></ProtectedRoute> },
-    { path: "/info/:slug", element: <InfoPage /> }, // public — no auth required
+    { path: "/", element: withSuspense(Landing) },
+    { path: "/login", element: withSuspense(Login) },
+    { path: "/browse", element: <ProtectedRoute>{withSuspense(Browse)}</ProtectedRoute> },
+    { path: "/movies", element: <ProtectedRoute>{withSuspense(Movies)}</ProtectedRoute> },
+    { path: "/shows", element: <ProtectedRoute>{withSuspense(Shows)}</ProtectedRoute> },
+    { path: "/new-and-popular", element: <ProtectedRoute>{withSuspense(NewAndPopular)}</ProtectedRoute> },
+    { path: "/my-list", element: <ProtectedRoute>{withSuspense(MyList)}</ProtectedRoute> },
+    { path: "/games", element: <ProtectedRoute>{withSuspense(Games)}</ProtectedRoute> },
+    { path: "/browse-by-languages", element: <ProtectedRoute>{withSuspense(BrowseByLanguages)}</ProtectedRoute> },
+    { path: "/notifications", element: <ProtectedRoute>{withSuspense(Notifications)}</ProtectedRoute> },
+    { path: "/info/:slug", element: withSuspense(InfoPage) },
   ]);
 
   return (

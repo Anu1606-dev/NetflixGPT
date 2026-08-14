@@ -10,6 +10,7 @@ A Netflix-inspired movie browsing web app built with React, Tailwind CSS, Fireba
 ## ✨ Features
 
 ### Authentication
+
 - Sign Up and Sign In with email and password (Firebase Authentication)
 - Regex-based form validation for email format and password strength
 - Custom error messages for invalid credentials, weak passwords, and duplicate accounts
@@ -17,6 +18,7 @@ A Netflix-inspired movie browsing web app built with React, Tailwind CSS, Fireba
 - Persistent sessions with sign out functionality
 
 ### Browsing Experience
+
 - Netflix-style landing page for logged-out users
 - Post-login Browse page with:
   - Hero banner showcasing a featured movie (title, overview, backdrop)
@@ -25,6 +27,7 @@ A Netflix-inspired movie browsing web app built with React, Tailwind CSS, Fireba
 - Responsive navigation header with profile dropdown, notifications, and language selector
 
 ### Architecture
+
 - Global state management using Redux Toolkit (user session and movie data)
 - Custom React hooks for fetching and caching movie data
 - Environment-based API key management
@@ -34,21 +37,22 @@ A Netflix-inspired movie browsing web app built with React, Tailwind CSS, Fireba
 
 ## 🛠️ Tech Stack
 
-| Category | Technology |
-|---|---|
-| Frontend | React |
-| Styling | Tailwind CSS |
-| Routing | React Router |
+| Category         | Technology                 |
+| ---------------- | -------------------------- |
+| Frontend         | React                      |
+| Styling          | Tailwind CSS               |
+| Routing          | React Router               |
 | State Management | Redux Toolkit, React-Redux |
-| Authentication | Firebase Authentication |
-| Hosting | Firebase Hosting |
-| Movie Data | TMDB API |
+| Authentication   | Firebase Authentication    |
+| Hosting          | Firebase Hosting           |
+| Movie Data       | TMDB API                   |
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js and npm installed
 - A Firebase project with Email/Password authentication enabled
 - A TMDB account with an API Read Access Token
@@ -56,12 +60,14 @@ A Netflix-inspired movie browsing web app built with React, Tailwind CSS, Fireba
 ### Installation
 
 1. Clone the repository
+
    ```bash
    git clone https://github.com/Anu1606-dev/NetflixGPT.git
    cd NetflixGPT
    ```
 
 2. Install dependencies
+
    ```bash
    npm install
    ```
@@ -69,6 +75,7 @@ A Netflix-inspired movie browsing web app built with React, Tailwind CSS, Fireba
 3. Set up environment variables
 
    Create a `.env` file in the project root:
+
    ```
    REACT_APP_TMDB_KEY=your_tmdb_read_access_token
    ```
@@ -123,6 +130,7 @@ src/
 ---
 
 ## 🔮 Planned Enhancements
+
 - AI-powered movie search
 - Multi-language support
 - Additional movie categories (Popular, Top Rated, Upcoming)
@@ -137,5 +145,7 @@ Built by Anushka Sarkar as a personal project to practice React, state managemen
 Project Console: https://console.firebase.google.com/project/netflixgpt-a03a2/overview
 Hosting URL: https://netflixgpt-a03a2.web.app
 
+## 📊 Performance
 
-
+- Route-based code splitting via `React.lazy` — each page loads as a separate chunk
+- Lighthouse Performance score: 9X/100 (measured on production build)
