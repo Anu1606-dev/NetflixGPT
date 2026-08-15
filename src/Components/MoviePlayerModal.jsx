@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { API_OPTIONS, TMDB_BASE_URL } from '../Utils/constants';
 import { saveWatchProgress, removeWatchProgress } from '../Utils/firestoreProgress';
 import YoutubeTrailerPlayer from './YoutubeTrailerPlayer';
+import useEscapeKey from '../hooks/useEscapeKey';
 
 const COMPLETE_THRESHOLD = 0.9; // 90%+ watched = considered finished, drops off Continue Watching
 
@@ -54,6 +55,8 @@ const MoviePlayerModal = ({ item, onClose }) => {
     }
     onClose();
   };
+
+  useEscapeKey(handleClose);
 
   return (
     <div className="fixed inset-0 bg-black z-[70] flex flex-col">

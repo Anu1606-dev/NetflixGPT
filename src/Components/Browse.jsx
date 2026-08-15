@@ -289,7 +289,7 @@ const Browse = () => {
             </div>
           </div>
 
-          <div className="relative mt-4 z-10">
+          <div id="main-content" className="relative mt-4 z-10">
             {continueWatchingCardData.length > 0 && (
               <MovieList
                 title="Continue Watching"

@@ -24,6 +24,7 @@ const MovieList = ({ title, movies, onCardPlay }) => {
 
       <button
         onClick={() => scroll("left")}
+        aria-label="Scroll left"
         className="hidden md:flex md:opacity-0 md:group-hover:opacity-100 absolute left-0 top-1/2 mt-4 -translate-y-1/2 z-10 h-20 md:h-24 w-8 md:w-10 bg-black/50 hover:bg-black/80 text-white items-center justify-center text-xl md:text-2xl transition-opacity"
       >
         ‹
@@ -48,6 +49,7 @@ const MovieList = ({ title, movies, onCardPlay }) => {
 
       <button
         onClick={() => scroll("right")}
+        aria-label="Scroll right"
         className="hidden md:flex md:opacity-0 md:group-hover:opacity-100 absolute right-0 top-1/2 mt-4 -translate-y-1/2 z-10 h-20 md:h-24 w-8 md:w-10 bg-black/50 hover:bg-black/80 text-white items-center justify-center text-xl md:text-2xl transition-opacity"
       >
         ›

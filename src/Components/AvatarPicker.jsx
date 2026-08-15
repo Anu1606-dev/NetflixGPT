@@ -4,11 +4,12 @@ import { updateProfile } from 'firebase/auth';
 import { auth } from '../Utils/Firebase';
 import { addUser } from '../Utils/userSlice';
 import { AVATARS } from '../Utils/constants';
+import useEscapeKey from '../hooks/useEscapeKey';
 
 const AvatarPicker = ({ onClose }) => {
   const dispatch = useDispatch();
   const user = useSelector((store) => store.user);
-  const [customUrl, setCustomUrl] = useState('');
+  const [customUrl, setCustomUrl] = useState(useEscapeKey(onClose));
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
 
