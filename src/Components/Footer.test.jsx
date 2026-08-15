@@ -18,7 +18,7 @@ describe('Footer', () => {
 
   test('each footer link points to its own info page', () => {
     renderFooter();
-    const termsLink = screen.getByText('Terms of Use').closest('a');
+    const termsLink = screen.getByRole('link', { name: /terms of use/i });
     expect(termsLink).toHaveAttribute('href', '/info/terms-of-use');
   });
 

@@ -3,17 +3,14 @@ import { useAppDispatch, useAppSelector } from "./reduxHooks";
 import { API_OPTIONS, TMDB_BASE_URL, GEMINI_URL, GEMINI_STREAM_URL } from "../Utils/constants";
 import { GEMINI_TOOLS } from "../Utils/geminiTools";
 import { addUserMessage, addAssistantMessage } from "../Utils/gptSlice";
+import { buildTasteProfile } from "../Utils/buildTasteProfile";
 import { MovieDetail } from "../Utils/types";
 
-const SYSTEM_INSTRUCTION = {
-  parts: [{
-    text:
-      "You are a friendly movie and TV assistant inside a Netflix-style app. Always reply in a warm, " +
-      "conversational tone, like a knowledgeable friend, not a robot. Use the functions available to you " +
-      "whenever the user is asking about movies or shows — don't just describe them in plain text. " +
-      "If the user is just chatting casually and not asking about movies, reply normally without calling a function.",
-  }],
-};
+const BASE_SYSTEM_TEXT =
+  "You are a friendly movie and TV assistant inside a Netflix-style app. Always reply in a warm, " +
+  "conversational tone, like a knowledgeable friend, not a robot. Use the functions available to you " +
+  "whenever the user is asking about movies or shows — don't just describe them in plain text. " +
+  "If the user is just chatting casually and not asking about movies, reply normally without calling a function.";
 
 interface UseGptChatReturn {
   sendMessage: (userText: string) => Promise<void>;
@@ -24,8 +21,17 @@ interface UseGptChatReturn {
 const useGptChat = (): UseGptChatReturn => {
   const dispatch = useAppDispatch();
   const conversation = useAppSelector((store) => store.gpt.conversation);
+  const myListItems = useAppSelector((store) => store.myList.items);
+  const continueWatchingItems = useAppSelector((store) => store.continueWatching.items);
   const [streamingText, setStreamingText] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+
+  // Built fresh on each message, so it reflects the user's latest saved/watched items
+  const buildSystemInstruction = () => {
+    const tasteProfile = buildTasteProfile(myListItems, continueWatchingItems);
+    const text = tasteProfile ? `${BASE_SYSTEM_TEXT}\n\n${tasteProfile}` : BASE_SYSTEM_TEXT;
+    return { parts: [{ text }] };
+  };
 
   const searchMovieTMDB = async (movieName: string): Promise<any> => {
     const data = await fetch(
@@ -69,7 +75,10 @@ const useGptChat = (): UseGptChatReturn => {
     };
   };
 
-  const decideAction = async (contents: any[]): Promise<{ modelContent: any; firstPart: any }> => {
+  const decideAction = async (
+    contents: any[],
+    systemInstruction: { parts: { text: string }[] }
+  ): Promise<{ modelContent: any; firstPart: any }> => {
     const response = await fetch(GEMINI_URL, {
       method: "POST",
       headers: {
@@ -77,7 +86,7 @@ const useGptChat = (): UseGptChatReturn => {
         "x-goog-api-key": process.env.REACT_APP_GEMINI_KEY as string,
       },
       body: JSON.stringify({
-        system_instruction: SYSTEM_INSTRUCTION,
+        system_instruction: systemInstruction,
         contents,
         tools: GEMINI_TOOLS,
       }),
@@ -95,14 +104,17 @@ const useGptChat = (): UseGptChatReturn => {
     return { modelContent, firstPart };
   };
 
-  const streamFinalReply = async (contents: any[]): Promise<string> => {
+  const streamFinalReply = async (
+    contents: any[],
+    systemInstruction: { parts: { text: string }[] }
+  ): Promise<string> => {
     const response = await fetch(GEMINI_STREAM_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-goog-api-key": process.env.REACT_APP_GEMINI_KEY as string,
       },
-      body: JSON.stringify({ system_instruction: SYSTEM_INSTRUCTION, contents }),
+      body: JSON.stringify({ system_instruction: systemInstruction, contents }),
     });
 
     if (!response.ok || !response.body) {
@@ -150,6 +162,8 @@ const useGptChat = (): UseGptChatReturn => {
     setIsStreaming(true);
     setStreamingText("");
 
+    const systemInstruction = buildSystemInstruction();
+
     const baseContents = [
       ...conversation.map((turn) => ({
         role: turn.role === "user" ? "user" : "model",
@@ -159,7 +173,7 @@ const useGptChat = (): UseGptChatReturn => {
     ];
 
     try {
-      const { modelContent, firstPart } = await decideAction(baseContents);
+      const { modelContent, firstPart } = await decideAction(baseContents, systemInstruction);
 
       if (!firstPart?.functionCall) {
         const plainText = firstPart?.text?.trim() || "I'm not sure how to help with that.";
@@ -196,7 +210,7 @@ const useGptChat = (): UseGptChatReturn => {
         { role: "user", parts: [{ functionResponse: { name, response: functionResult } }] },
       ];
 
-      const finalText = await streamFinalReply(contentsWithFunctionResult);
+      const finalText = await streamFinalReply(contentsWithFunctionResult, systemInstruction);
 
       dispatch(
         addAssistantMessage({
