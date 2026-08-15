@@ -95,7 +95,8 @@ const YoutubeTrailerPlayer = ({
         playerRef.current.destroy();
       }
     };
-  }, [videoId]);
+  }, // eslint-disable-next-line react-hooks/exhaustive-deps
+  [videoId]);
 
   useEffect(() => {
     if (playerRef.current?.mute && playerRef.current?.unMute) {

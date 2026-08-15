@@ -30,6 +30,7 @@ const SearchOverlay = ({ onClose }) => {
       search(query);
     }, 500);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
 
   const handleSubmit = (e) => {
