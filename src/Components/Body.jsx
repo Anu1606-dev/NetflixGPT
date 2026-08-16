@@ -6,10 +6,10 @@ import { auth } from '../Utils/Firebase';
 import { addUser, removeUser } from '../Utils/userSlice';
 import useMyListSync from '../hooks/useMyListSync';
 import useContinueWatchingSync from '../hooks/useContinueWatchingSync';
+import useChatHistorySync from '../hooks/useChatHistorySync';
 import ProtectedRoute from './ProtectedRoute';
 import LoadingScreen from './LoadingScreen';
 
-// Each page now becomes its own separate JS chunk, downloaded only when visited
 const Landing = lazy(() => import('./Landing'));
 const Login = lazy(() => import('./Login'));
 const Browse = lazy(() => import('./Browse'));
@@ -32,6 +32,7 @@ const Body = () => {
   const dispatch = useDispatch();
   useMyListSync();
   useContinueWatchingSync();
+  useChatHistorySync();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {

@@ -49,6 +49,10 @@ const gptSlice = createSlice({
         movieDetail: action.payload.movieDetail || null,
       });
     },
+    // NEW: hydrates conversation from Firestore on load, without an extra network round trip per turn
+    loadConversation: (state, action: PayloadAction<ConversationTurn[]>) => {
+      state.conversation = action.payload;
+    },
     resetConversation: (state) => {
       state.conversation = [];
     },
@@ -59,6 +63,7 @@ export const {
   toggleGptSearchView,
   addUserMessage,
   addAssistantMessage,
+  loadConversation,
   resetConversation,
 } = gptSlice.actions;
 
