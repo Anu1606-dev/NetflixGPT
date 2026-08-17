@@ -23,6 +23,7 @@ import GptSearchBar from './GptSearchBar';
 import GptChatWindow from './GptChatWindow';
 import { resetConversation, toggleGptSearchView } from '../Utils/gptSlice';
 import { BACKDROP_CDN_URL } from '../Utils/constants';
+import { clearStoredConversation } from '../Utils/firestoreChatHistory';
 
 const MIN_REVEAL_DELAY = 2500;
 const MAX_REVEAL_DELAY = 5000;
@@ -38,7 +39,7 @@ const Browse = () => {
 
   const dispatch = useDispatch();
   const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
-  const { sendMessage, isStreaming, streamingText } = useGptChat();
+  const { sendMessage, isStreaming, streamingText, statusText } = useGptChat();
   const { sendImage, isProcessing: isImageProcessing } = useChatImageSearch();
 
   useNowPlayingMovies();
@@ -66,6 +67,7 @@ const Browse = () => {
   const popularTV = useSelector((store) => store.tv.popularTV);
   const topRatedTV = useSelector((store) => store.tv.topRatedTV);
   const continueWatchingItems = useSelector((store) => store.continueWatching.items);
+  const user = useSelector((store) => store.user);
 
   useEffect(() => {
     if (nowPlayingMovies && nowPlayingMovies.length > 0) {
@@ -171,7 +173,10 @@ const Browse = () => {
             </div>
 
             <button
-              onClick={() => dispatch(resetConversation())}
+              onClick={() => {
+                dispatch(resetConversation());
+                if (user?.uid) clearStoredConversation(user.uid);
+              }}
               className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-300 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -186,6 +191,7 @@ const Browse = () => {
             <GptChatWindow
               streamingText={streamingText}
               isStreaming={isStreaming}
+              statusText={statusText}
               onSuggestionClick={sendMessage}
             />
           </div>
@@ -209,9 +215,8 @@ const Browse = () => {
 
             {trailerVideo?.key && (
               <div
-                className={`absolute inset-0 overflow-hidden transition-opacity duration-700 ${
-                  showVideo ? "opacity-100" : "opacity-0"
-                }`}
+                className={`absolute inset-0 overflow-hidden transition-opacity duration-700 ${showVideo ? "opacity-100" : "opacity-0"
+                  }`}
               >
                 <div className="absolute top-1/2 left-1/2 w-[177.78vh] h-[56.25vw] min-w-full min-h-full -translate-x-1/2 -translate-y-1/2">
                   <YoutubeTrailerPlayer

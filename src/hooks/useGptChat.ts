@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "./reduxHooks";
-import { API_OPTIONS, TMDB_BASE_URL, GEMINI_URL, GEMINI_STREAM_URL } from "../Utils/constants";
+import { API_OPTIONS, TMDB_BASE_URL, GEMINI_LITE_URL, GEMINI_STREAM_URL } from "../Utils/constants";
 import { GEMINI_TOOLS } from "../Utils/geminiTools";
 import { addUserMessage, addAssistantMessage } from "../Utils/gptSlice";
 import { buildTasteProfile } from "../Utils/buildTasteProfile";
@@ -12,10 +12,14 @@ const BASE_SYSTEM_TEXT =
   "whenever the user is asking about movies or shows — don't just describe them in plain text. " +
   "If the user is just chatting casually and not asking about movies, reply normally without calling a function.";
 
+// Lightweight, no taste profile — used only for the fast "which function?" decision
+const DECISION_SYSTEM_INSTRUCTION = { parts: [{ text: BASE_SYSTEM_TEXT }] };
+
 interface UseGptChatReturn {
   sendMessage: (userText: string) => Promise<void>;
   isStreaming: boolean;
   streamingText: string;
+  statusText: string;
 }
 
 const useGptChat = (): UseGptChatReturn => {
@@ -24,10 +28,11 @@ const useGptChat = (): UseGptChatReturn => {
   const myListItems = useAppSelector((store) => store.myList.items);
   const continueWatchingItems = useAppSelector((store) => store.continueWatching.items);
   const [streamingText, setStreamingText] = useState("");
+  const [statusText, setStatusText] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
 
-  // Built fresh on each message, so it reflects the user's latest saved/watched items
-  const buildSystemInstruction = () => {
+  // Full instruction with taste profile — used only for the final visible reply
+  const buildFinalSystemInstruction = () => {
     const tasteProfile = buildTasteProfile(myListItems, continueWatchingItems);
     const text = tasteProfile ? `${BASE_SYSTEM_TEXT}\n\n${tasteProfile}` : BASE_SYSTEM_TEXT;
     return { parts: [{ text }] };
@@ -75,18 +80,16 @@ const useGptChat = (): UseGptChatReturn => {
     };
   };
 
-  const decideAction = async (
-    contents: any[],
-    systemInstruction: { parts: { text: string }[] }
-  ): Promise<{ modelContent: any; firstPart: any }> => {
-    const response = await fetch(GEMINI_URL, {
+  // Phase 1 — fast, lite model, no personalization context, just decides what to do
+  const decideAction = async (contents: any[]): Promise<{ modelContent: any; firstPart: any }> => {
+    const response = await fetch(GEMINI_LITE_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-goog-api-key": process.env.REACT_APP_GEMINI_KEY as string,
       },
       body: JSON.stringify({
-        system_instruction: systemInstruction,
+        system_instruction: DECISION_SYSTEM_INSTRUCTION,
         contents,
         tools: GEMINI_TOOLS,
       }),
@@ -104,6 +107,7 @@ const useGptChat = (): UseGptChatReturn => {
     return { modelContent, firstPart };
   };
 
+  // Phase 2 — full model, streamed, personalized, this is what the user actually reads
   const streamFinalReply = async (
     contents: any[],
     systemInstruction: { parts: { text: string }[] }
@@ -161,8 +165,7 @@ const useGptChat = (): UseGptChatReturn => {
     dispatch(addUserMessage(userText));
     setIsStreaming(true);
     setStreamingText("");
-
-    const systemInstruction = buildSystemInstruction();
+    setStatusText("Thinking...");
 
     const baseContents = [
       ...conversation.map((turn) => ({
@@ -173,7 +176,7 @@ const useGptChat = (): UseGptChatReturn => {
     ];
 
     try {
-      const { modelContent, firstPart } = await decideAction(baseContents, systemInstruction);
+      const { modelContent, firstPart } = await decideAction(baseContents);
 
       if (!firstPart?.functionCall) {
         const plainText = firstPart?.text?.trim() || "I'm not sure how to help with that.";
@@ -187,10 +190,12 @@ const useGptChat = (): UseGptChatReturn => {
       let functionResult: any;
 
       if (name === "recommend_movies") {
+        setStatusText("Finding movies...");
         const titles = (args.movie_titles || []).slice(0, 5);
         movies = (await Promise.all(titles.map((t: string) => searchMovieTMDB(t)))).filter(Boolean);
         functionResult = { success: movies.length > 0, count: movies.length };
       } else if (name === "get_movie_details") {
+        setStatusText("Looking up details...");
         movieDetail = await getMovieDetails(args.title);
         functionResult = movieDetail
           ? {
@@ -204,13 +209,15 @@ const useGptChat = (): UseGptChatReturn => {
         functionResult = { success: false, error: "Unknown function" };
       }
 
+      setStatusText("Writing reply...");
+
       const contentsWithFunctionResult = [
         ...baseContents,
         modelContent,
         { role: "user", parts: [{ functionResponse: { name, response: functionResult } }] },
       ];
 
-      const finalText = await streamFinalReply(contentsWithFunctionResult, systemInstruction);
+      const finalText = await streamFinalReply(contentsWithFunctionResult, buildFinalSystemInstruction());
 
       dispatch(
         addAssistantMessage({
@@ -231,10 +238,11 @@ const useGptChat = (): UseGptChatReturn => {
     } finally {
       setIsStreaming(false);
       setStreamingText("");
+      setStatusText("");
     }
   };
 
-  return { sendMessage, isStreaming, streamingText };
+  return { sendMessage, isStreaming, streamingText, statusText };
 };
 
 export default useGptChat;

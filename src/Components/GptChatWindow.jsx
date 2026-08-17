@@ -27,7 +27,7 @@ const AiAvatar = () => (
   </div>
 );
 
-const GptChatWindow = ({ streamingText, isStreaming, onSuggestionClick }) => {
+const GptChatWindow = ({ streamingText, isStreaming, statusText, onSuggestionClick }) => {
   const conversation = useSelector((store) => store.gpt.conversation);
 
   if (conversation.length === 0 && !isStreaming) {
@@ -106,13 +106,18 @@ const GptChatWindow = ({ streamingText, isStreaming, onSuggestionClick }) => {
       {isStreaming && (
         <div className="flex justify-start items-end gap-2">
           <AiAvatar />
-          <div className="bg-gray-800/90 text-white px-4 py-2.5 rounded-2xl rounded-bl-sm max-w-[85%] sm:max-w-[70%] text-sm sm:text-base min-h-[2.75rem] flex items-center shadow-lg">
-            {streamingText || (
-              <span className="flex gap-1">
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.15s]"></span>
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.3s]"></span>
-              </span>
+          <div className="bg-gray-800/90 text-white px-4 py-2.5 rounded-2xl rounded-bl-sm max-w-[85%] sm:max-w-[70%] text-sm sm:text-base min-h-[2.75rem] flex items-center gap-2 shadow-lg">
+            {streamingText ? (
+              streamingText
+            ) : (
+              <>
+                <span className="flex gap-1">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.15s]"></span>
+                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.3s]"></span>
+                </span>
+                {statusText && <span className="text-gray-400 text-xs">{statusText}</span>}
+              </>
             )}
           </div>
         </div>
