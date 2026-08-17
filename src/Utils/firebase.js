@@ -1,19 +1,18 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore"; // NEW
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAVsuTxSsHfFIyfSSDYa9lGM_GZSvIbQEA",
-  authDomain: "netflixgpt-a03a2.firebaseapp.com",
-  projectId: "netflixgpt-a03a2",
-  storageBucket: "netflixgpt-a03a2.firebasestorage.app",
-  messagingSenderId: "334849048388",
-  appId: "1:334849048388:web:8713c3f634c806bf2da111",
-  measurementId: "G-F96M7K8TW0",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
 getAnalytics(app);
 export const auth = getAuth();
-export const db = getFirestore(app); // NEW
+export const db = getFirestore(app);
